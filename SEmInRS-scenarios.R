@@ -4,7 +4,7 @@
 ### Gamma (Erlang) distributed infectious, latent and immune periods
 
 #Clear R environment
-#remove(list = ls())
+remove(list = ls())
 
 #Set working directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -57,10 +57,13 @@ legend(x = c(70,95), y=c(0.6,0.8), legend=c("Susceptible", "Infected", "Recovere
 
 #Assuming SEIR model, scenario 1 is in R environment
 #Curve of I, compared between SEIR and SE^mI^nR
+pdf("/Users/tomc/Google Drive/coronavirus/plots/I-curve-gam-exp.pdf", height=7, width=9)
 plot(out.0$I~out.0$time, type="l", ylim=c(0,0.14), xlab="Time (days)", 
-     ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, lty=4, lwd=2)
-lines(out.gam.0$I~out.gam.0$time, lty=1, lwd=2)
-legend(x=c(70,100), y=c(0.1, 0.12), legend=c("Gamma", "Exponential"), lty=c(1, 4), lwd=c(2,2), cex=1.2)
+     ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, lty=4, lwd=2, col="darkred")
+lines(out.gam.0$I~out.gam.0$time, lty=1, lwd=2, col="darkred")
+legend(x=c(70,100), y=c(0.1, 0.12), legend=c("Gamma", "Exponential"), lty=c(1, 4), lwd=c(2,2), cex=1.2,
+       col=c("darkred", "darkred"))
+dev.off()
 
 ###################################################
 ## Scenario 2: Immunity lasts average of 90 days ##
@@ -91,21 +94,33 @@ out.gam.90 <- with(out.gam.t.90,
                      I=I1+I2, 
                      R=R1+R2))
 
+#Equilibrium values
+S.eq <- 1/R0
+I.eq <- (pars["omega"]/pars["beta"])*(R0-1)
+E.eq <- (pars["omega"]*(pars["omega"]+pars["gamma"])/pars["beta"]*pars["sigma"])*(R0-1)
+R.eq <- 1-S.eq-I.eq-E.eq
+
 #plot SE^mI^nR^oS
+#pdf("/Users/tomc/Google Drive/coronavirus/plots/SEmInRoS-scenario2.pdf", height=7, width=9)
 with(out.gam.90, plot(S~time, xlab="Days", ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, 
                       type="l", ylim=c(0,1), col="darkblue", lwd=2))
 with(out.gam.90, lines(I~time, col="darkred", lwd=2))
 with(out.gam.90, lines(R~time, col="darkgreen", lwd=2))
 legend(x = c(220,300), y=c(0.75,0.95), legend=c("Susceptible", "Infected", "Recovered"), lty=c(1,1,1), 
        lwd=c(2,2,2), col=c("darkblue", "darkred", "darkgreen"), cex=1.2)
-abline(h=1/R0, lty="dashed", lwd=2) #equilbrium proportion of susceptibles
+abline(h=S.eq, lty="dashed", lwd=2, col="darkblue") #equilbrium proportion susceptible
+abline(h=I.eq, lty="dashed", lwd=2, col="darkred") #equilbrium proportion infected
+abline(h=R.eq, lty="dashed", lwd=2, col="darkgreen") #equilibrium proportion recovered
+#dev.off()
 
 #Assuming SEIR model, scenario 2 is in R environment
-pdf("Google Drive/coronavirus/S-curve-gam-exp.pdf", height=7, width=9)
-plot(out.90$S~out.90$time, type="l", xlab="Time (days)", ylim=c(0,1),
+#pdf("/Users/tomc/Google Drive/coronavirus/plots/S-curve-gam-exp.pdf", height=7, width=9)
+plot(out.90$S~out.90$time, type="l", xlab="Days", ylim=c(0,1), col="darkblue",
      ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, lty=4, lwd=2)
-lines(out.gam.90$S~out.gam.90$time, lty=1, lwd=2)
-legend(x = c(220,300), y=c(0.75,0.9), legend=c("Gamma", "Exponential"), lty=c(1, 4), lwd=c(2,2), cex=1.2)
+lines(out.gam.90$S~out.gam.90$time, lty=1, lwd=2, col="darkblue")
+legend(x = c(220,300), y=c(0.75,0.9), legend=c("Gamma", "Exponential"), lty=c(1, 4), 
+       lwd=c(2,2), cex=1.2, col=c("darkblue", "darkblue"))
+#dev.off()
 
 ####################################################
 ## Scenario 3: Immunity lasts average of 180 days ##
@@ -136,20 +151,32 @@ out.gam.180 <- with(out.gam.t.180,
                       I=I1+I2, 
                       R=R1+R2))
 
+#Equilibrium values
+S.eq <- 1/R0
+I.eq <- (pars["omega"]/pars["beta"])*(R0-1)
+E.eq <- (pars["omega"]*(pars["omega"]+pars["gamma"])/pars["beta"]*pars["sigma"])*(R0-1)
+R.eq <- 1-S.eq-I.eq-E.eq
+
 #plot SE^mI^nR^oS
+#pdf("/Users/tomc/Google Drive/coronavirus/plots/SEmInRoS-scenario3.pdf", height=7, width=9)
 with(out.gam.180, plot(S~time, xlab="Days", ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, 
                        type="l", ylim=c(0,1), col="darkblue", lwd=2))
 with(out.gam.180, lines(I~time, col="darkred", lwd=2))
 with(out.gam.180, lines(R~time, col="darkgreen", lwd=2))
 legend(x = c(380,510), y=c(0.75,0.95), legend=c("Susceptible", "Infected", "Recovered"), lty=c(1,1,1), 
        lwd=c(2,2,2), col=c("darkblue", "darkred", "darkgreen"), cex=1.2)
-abline(h=1/R0, lty="dashed", lwd=2) #equilbrium proportion of susceptibles
+abline(h=S.eq, lty="dashed", lwd=2, col="darkblue") #equilbrium proportion susceptible
+abline(h=I.eq, lty="dashed", lwd=2, col="darkred") #equilbrium proportion infected
+abline(h=R.eq, lty="dashed", lwd=2, col="darkgreen") #equilibrium proportion recovered
+#dev.off()
 
 #Assuming SEIR model, scenario 3 is in R environment
 #Secondary peak in I compared between SEIR and SE^mI^nR^oS
-#pdf("Google Drive/coronavirus/I-secondary-curve.pdf", height=7, width=9)
-plot(out.gam.180$I~out.gam.180$time, type="l", xlab="Time (days)", ylim=c(0,0.08),
-     ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, lty=1, lwd=2, xlim=c(200,350))
-lines(out.180$I~out.180$time, lty=4, lwd=2)
-legend(x = c(310,350), y=c(0.06,0.0725), legend=c("Gamma", "Exponential"), lty=c(1, 4), lwd=c(2,2), cex=1.2)
+#pdf("/Users/tomc/Google Drive/coronavirus/plots/I-secondary-curve.pdf", height=7, width=9)
+plot(out.gam.180$I~out.gam.180$time, type="l", xlab="Days", ylim=c(0,0.08),
+     ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, lty=1, lwd=2, 
+     xlim=c(200,350), col="darkred")
+lines(out.180$I~out.180$time, lty=4, lwd=2, col="darkred")
+legend(x = c(310,350), y=c(0.06,0.0725), legend=c("Gamma", "Exponential"), lty=c(1, 4), lwd=c(2,2), 
+       cex=1.2, col=c("darkred", "darkred"))
 #dev.off()

@@ -3,12 +3,12 @@
 ### SEIRS: differential equation model
 ### exponentially distributed infectious period
 
+#Clear R environment
+#remove(list = ls())
+
 #libraries
 require(deSolve)
 require(testthat)
-
-#Clear R environment
-#remove(list = ls())
 
 ##########################
 ## SEIRS model function ## 

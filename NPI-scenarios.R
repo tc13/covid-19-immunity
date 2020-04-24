@@ -38,7 +38,7 @@ tau <- 60               #Duration of intervention (days)
 ## Vectors ##
 #############
 
-time <- seq(from=1,to=500, by=1)       #time steps (days)
+time <- seq(from=1,to=300, by=1)       #time steps (days)
 yini <- c(S=0.999, E1=0, E2=0, E3=0, E4=0, I1=0.0005, I2=0.0005, R1=0, R2=0) #Initial population size
 
 ##############################################
@@ -68,15 +68,38 @@ temp <- as.data.frame(ode(y=yini,func=NPI,times=time,parms=pars))
 out.NPI <- with(temp, data.frame(time=time, S=S, E=E1+E2+E3+E4, I=I1+I2, R=R1+R2)) #Sum E, I, and R compartments 
 rm(temp)
 
+########################
+## Equilibrium values ##
+########################
+
+S.eq <- 1/R0
+I.eq <- (pars["omega"]/(R0*pars["gamma"]))*(R0-1)
+E.eq <- (pars["omega"]*(pars["omega"]+pars["gamma"])/(R0*pars["gamma"])*pars["sigma"])*(R0-1)
+R.eq <- 1-S.eq-I.eq-E.eq
+
 ##############
 ## Plotting ##
 ##############
 
-#pdf("I-interventions.pdf", height=7, width=9)
+#pdf("/Users/tomc/Google Drive/coronavirus/plots/SEmInRoS-NPI1.pdf", height=7, width=9)
+with(out.NPI, plot(S~time, xlab="Days", ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, 
+                      type="l", ylim=c(0,1), col="darkblue", lwd=2))
+with(out.NPI, lines(I~time, col="darkred", lwd=2))
+with(out.NPI, lines(R~time, col="darkgreen", lwd=2))
+legend(x = c(220,300), y=c(0.75,0.95), legend=c("Susceptible", "Infected", "Recovered"), lty=c(1,1,1), 
+       lwd=c(2,2,2), col=c("darkblue", "darkred", "darkgreen"), cex=1.2)
+#abline(h=S.eq, lty="dashed", lwd=2, col="darkblue") #equilbrium proportion susceptible
+#abline(h=I.eq, lty="dashed", lwd=2, col="darkred") #equilbrium proportion infected
+#abline(h=R.eq, lty="dashed", lwd=2, col="darkgreen") #equilibrium proportion recovered
+abline(v=c(time_NPI, time_NPI+tau), lty=c(2,2), lwd=c(2,2)) #intervention period
+#dev.off()
+
+#pdf("/Users/tomc/Google Drive/coronavirus/plots/I-interventions.pdf", height=7, width=9)
 with(out.NPI, plot(I~time, xlab="Days", ylab="Proportion of Population", cex.lab=1.4, cex.axis=1.4, 
                      type="l", col="darkred", lwd=2, ylim=c(0,0.14), lty=4))
-abline(v=c(time_NPI, time_NPI+tau), lty=c(2,2)) #intervention period
+abline(v=c(time_NPI, time_NPI+tau), lty=c(2,2), lwd=c(2,2)) #intervention period
 with(baseline, lines(I~time, col="darkred", lwd=2, lty=1))
-legend(x = c(325,500), y=c(0.12,0.14), legend=c("Infected (baseline)", "Infected (with NPI)"), lty=c(1,4), 
+legend(x = c(200,300), y=c(0.12,0.14), legend=c("Infected (baseline)", "Infected (with NPI)"), lty=c(1,4), 
        lwd=c(2,2), col=c("darkred", "darkred"), cex=1.2)
+abline(h=I.eq, lty="dashed", lwd=2, col="darkred") #equilbrium proportion infected
 #dev.off()
