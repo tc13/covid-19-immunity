@@ -1,18 +1,12 @@
 ### Dynamics of SARS-CoV-2 with waning immunity
 ### Thomas Crellen thomas.crellen@bdi.ox.ac.uk, April 2020
 ### SEIRS discrete time model, age structed for UK population, gamma (Erlang) distributed waiting times
-
-#Clear R environment
-remove(list = ls())
+### Model functions
 
 #libraries
 require(testthat)
 
-#Load data from Petra (UK contact matrix and population data)
-load("/Users/tomc/Google Drive/coronavirus/contact-matrix/BBC_contact_matrices_population_vector.RData")
-load("/Users/tomc/Google Drive/coronavirus/age-groups/uk_population_size_by_age_2018.RData")
-
-#Functions
+#Sum matrix function
 sum.mat <- function(mat1, mat2, mat3, mat4, c){
   # linear combination of four matrices; called in make.intervention.matrix
   sum <- c[1]*mat1 + c[2]*mat2 + c[3]*mat3 + c[4]*mat4
@@ -29,13 +23,12 @@ make.intervention.matrix <- function(matrixlistin, # list of contact matrices by
   
   context <- c("home", "work", "school", "other")
   matrix_labels <- apply(expand.grid(type, context), 1, paste, collapse = "_")
-  
   home_mat <- as.matrix(matrixlistin[[matrix_labels[1]]][,-1])
   work_mat <- as.matrix(matrixlistin[[matrix_labels[2]]][,-1])
   school_mat <- as.matrix(matrixlistin[[matrix_labels[3]]][,-1])
   other_mat <- as.matrix(matrixlistin[[matrix_labels[4]]][,-1])
-  
-  # pre-epidemic matrix
+ 
+   # pre-epidemic matrix
   overall_mat <-  sum.mat(home_mat, work_mat, school_mat, other_mat, c = c(1, 1, 1, 1))
   rownames(overall_mat) <- colnames(home_mat)
   int_mat <- sum.mat(home_mat, work_mat, school_mat, other_mat, c = intervention)
@@ -46,10 +39,12 @@ make.intervention.matrix <- function(matrixlistin, # list of contact matrices by
   }
 
 #Calculate transmission parameter
-get_beta <- function(C, p_age, gamma, R0){
+get_beta <- function(C, p_age, gamma, R0){ 
+  #arguments: matrix with average contacts by age group (C), vector with age proportions, gamma, R0
   
   n = length(p_age)
   M = matrix(data=0, nrow=nrow(C), ncol=ncol(C))
+  
   #Convert to probabilities (not sure if necessary - doesn't make a difference to beta)
   for(i in 1:n){
     for(j in 1:n){
@@ -65,35 +60,26 @@ get_beta <- function(C, p_age, gamma, R0){
   return(beta)
 }
 
-#Obtain overall contact matrix before and after interventions
-C <- make.intervention.matrix(BBC_contact_matrix, intervention = c(1,1,1,1))
-classes <- nrow(C) #number of age classes
-
-#parameters
-R0 <- 2.8                   #Basic reproduction number (in the absense of interventions) [From Petra]
-sigma_recip <- 4.5          #Average duration of latent period (days)     [From He, X., et al. Temporal dynamics in viral shedding and transmissibility of COVID-19. Nat Med (2020). https://doi.org/10.1038/s41591-020-0869-5]
-gamma_recip <- 3.07         #Average duration of infectiousness (days)    [From He, X., et al.]
-omega_recip <- 90           #Average duration of immunity (days) [user specified]
-m <- 4                      #Shape paremeter, latent period
-n <- 2                      #Shape parameter, infectious period
-o <- 2                      #Shape parameter, immune period
-dt <- 1                     #time period
-days <- 600
-
+#Main model function
+SEIRS_age_structure <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, immune_mean=90,
+                                latent_shape=4, infectious_shape=2, immune_shape=2, dt=1, days=400,
+                                C, total_population=66435550, p_age){
 #time vector
 time <- seq(1, days, dt)
 
-#Get UK population proportions
-total_pop <- sum(uk.pop.2018.count$total)
-uk.pop.2018.count$prop <- uk.pop.2018.count$total/total_pop
-
 #Transmission probability
-beta <- get_beta(C=C, p_age=uk.pop.2018.count$prop, gamma=(1/gamma_recip), R0=R0)
+beta <- get_beta(C=C, p_age=p_age, gamma=(1/infectious_mean), R0=R0)
 
 #Update parameter values (incoporating gamma shape and dt interval)
-sigma <- (1/sigma_recip) * m * dt       #probability of becoming infectious
-gamma <- (1/gamma_recip) * n * dt       #probability of recovery
-omega <- (1/omega_recip) * o * dt       #probability of immunity waning
+sigma <- (1/latent_mean) * latent_shape * dt               #probability of becoming infectious
+gamma <- (1/infectious_mean) * infectious_shape * dt       #probability of recovery
+omega <- (1/immune_mean) * immune_shape * dt               #probability of immunity waning
+
+#number of age classes
+classes <- length(p_age)
+
+#Absolute numbers by age group
+N_age <- p_age * total_population
 
 #State array
 state_names <- c("S", "E1", "E2", "E3", "E4", "I1", "I2", "R1", "R2")
@@ -102,7 +88,7 @@ state <- array(data=0, dim=c(length(time), classes, n_states), #rows are times, 
                dimnames = list(as.character(time), colnames(C), state_names))
 
 #State variables at t=0
-state[1,,"S"] <- uk.pop.2018.count$total #susceptible absolute numbers
+state[1,,"S"] <- N_age #susceptible absolute numbers
 
 #Initialise infections in 100 working adults in each age classes
 state[1,,"S"] <- state[1,,"S"]- 100
@@ -111,14 +97,14 @@ state[1,,"I2"] <- 50
 
 #Check initial population size (N) = UK Total Pop
 N = sum(state[1,,])
-test_that("Initial pop size (N) = 1", expect_equal(N, total_pop))
+test_that("Initial pop size (N) = 1", expect_equal(N, total_population))
 
 #For each timestep t
 for(t in 1:(length(time)-1)){
 
   #new infections per timestep  
   I <- apply(state[t,,c("I1","I2")], 1, sum) #sum I1 and I2 classes
-  lambda = beta * (as.matrix(C) %*% I/uk.pop.2018.count$total) #force of infection
+  lambda = beta * (as.matrix(C) %*% I/N_age) #force of infection
   new_infection = lambda * state[t,,"S"] * dt #new infections per timestep
 
   #Epidemic transitions at time t+1
@@ -134,7 +120,7 @@ for(t in 1:(length(time)-1)){
 
   #Check population size (N) =  UK total pop
   N = sum(state[(t+1),,])
-  test_that("Pop size (N) = 1", expect_equal(N, total_pop))
+  test_that("Pop size (N) = 1", expect_equal(N, total_population))
   
   #Test that no state value is negative
   test_that("States non-negative", expect_true(all(state[(t+1),,]>=0)))
@@ -143,23 +129,13 @@ for(t in 1:(length(time)-1)){
 #Combine E, I, R substates into new array
 state_names_SEIR <- state_names <- c("S", "E", "I", "R")
 
-out <- array(data=0, dim = c(length(time), classes, 4),
+out <- array(data=0, dim = c(length(time), classes, length(state_names_SEIR)),
              dimnames = list(as.character(time), colnames(C), state_names_SEIR))
 out[,,"S"] <- state[,,"S"]
 out[,,"E"] <- state[,,"E1"] + state[,,"E2"] + state[,,"E3"] + state[,, "E4"]
 out[,,"I"] <- state[,,"I1"] + state[,,"I2"]
 out[,,"R"] <- state[,,"R1"] + state[,,"R2"]
 
-#plot total S, I, R over time (sum over age classes)
-S <- apply(out[,,"S"],1,sum)
-E <- apply(out[,,"E"],1,sum)
-I <- apply(out[,,"I"],1,sum)
-R <- apply(out[,,"R"],1,sum)
-
-plot(S~time, type="l", ylim=c(0,total_pop))
-lines(I~time)
-lines(R~time)
-
-#plot I for seperate age classes
-plot(out[,1,"I"]~time, type="l", ylim=c(0, 1000000))
-for(k in 2:15){lines(out[,k,"I"]~time)}
+#Return out array
+return(out)
+}
