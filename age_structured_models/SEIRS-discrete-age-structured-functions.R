@@ -63,7 +63,7 @@ get_beta <- function(C, p_age, gamma, R0){
 #Main model function
 SEIRS_age_structure <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, immune_mean=90,
                                 latent_shape=4, infectious_shape=2, immune_shape=2, dt=1, days=400,
-                                C, total_population=66435550, p_age){
+                                C, total_population=66435550, p_age, I_init){
 #time vector
 time <- seq(1, days, dt)
 
@@ -73,8 +73,10 @@ beta <- get_beta(C=C, p_age=p_age, gamma=(1/infectious_mean), R0=R0)
 #Update parameter values (incoporating gamma shape and dt interval)
 sigma <- (1/latent_mean) * latent_shape * dt               #probability of becoming infectious
 gamma <- (1/infectious_mean) * infectious_shape * dt       #probability of recovery
+if(immune_mean==0){
+  omega <- 0} else{
 omega <- (1/immune_mean) * immune_shape * dt               #probability of immunity waning
-
+}
 #number of age classes
 classes <- length(p_age)
 
@@ -90,10 +92,10 @@ state <- array(data=0, dim=c(length(time), classes, n_states), #rows are times, 
 #State variables at t=0
 state[1,,"S"] <- N_age #susceptible absolute numbers
 
-#Initialise infections in 100 working adults in each age classes
-state[1,,"S"] <- state[1,,"S"]- 100
-state[1,,"I1"] <- 50
-state[1,,"I2"] <- 50
+#Initialise infections by age group with I_init vector
+state[1,,"S"] <- state[1,,"S"]- I_init
+state[1,,"I1"] <- I_init/2
+state[1,,"I2"] <- I_init/2
 
 #Check initial population size (N) = UK Total Pop
 N = sum(state[1,,])

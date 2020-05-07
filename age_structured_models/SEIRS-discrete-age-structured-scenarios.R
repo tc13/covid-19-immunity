@@ -6,12 +6,20 @@
 #Clear R environment
 remove(list = ls())
 
-#Load data from Petra (UK contact matrix and population data)
-load("/Users/tomc/Google Drive/coronavirus/contact-matrix/BBC_contact_matrices_population_vector.RData")
-load("/Users/tomc/Google Drive/coronavirus/age-groups/uk_population_size_by_age_2018.RData")
+#packages
+require(rstudioapi)
+
+#set path
+current_path <- getActiveDocumentContext()$path 
+head_directory <- gsub(x=current_path, pattern="covid-19-immunity.*", replacement = "covid-19-immunity/")
+setwd(head_directory)
+
+#Load UK contact matrix and population data
+load("data/BBC_contact_matrices_population_vector.RData")
+load("data/uk_population_size_by_age_2018.RData")
 
 #Source model functions
-source("/Users/tomc/Documents/covid-19-immunity/discrete_time_models/SEIRS-discrete-age-structured-functions.R")
+source("age_structured_models/SEIRS-discrete-age-structured-functions.R")
 
 #parameters
 R0 <- 2.8                   #Basic reproduction number (in the absense of interventions) [From Petra]
@@ -32,10 +40,13 @@ C <- make.intervention.matrix(BBC_contact_matrix, intervention = c(1,1,1,1))
 total_pop <- sum(uk.pop.2018.count$total)
 p_age <- uk.pop.2018.count$total/total_pop
 
+#initial infected vector; 50 individuals per working age group (20-59)
+I_init <- c(0,0,0,0,50,50,50,50,50,50,50,50,0,0,0)
+
 #SEIRS age structure model
-out <- SEIRS_age_structure(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, immune_mean=omega_recip,
+out <- SEIRS_age_structure(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, immune_mean=90,
                     latent_shape=m, infectious_shape=n, immune_shape=o, dt=dt, days=days, C=C, 
-                    total_population=total_pop, p_age=p_age)
+                    total_population=total_pop, p_age=p_age, I_init=I_init )
 
 #plot total S, I, R over time (sum over age classes)
 S <- apply(out[,,"S"],1,sum)
