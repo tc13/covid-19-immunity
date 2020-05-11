@@ -33,6 +33,7 @@ dt <- 1                     #time period (days)
 days <- 400                 #number of days 
 time <- seq(1, days, dt)    #time vector
 Rt <- 0.8 #Effective reproduction number during intervention
+intervention <- c(1,0.3,0.1,0.2)
 
 #Obtain overall contact matrix before and after interventions
 C <- make.intervention.matrix(BBC_contact_matrix, intervention = c(1,1,1,1))
@@ -59,7 +60,7 @@ out <- SEIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma
                             immune_mean_1=0, immune_mean_2=0, p_immunity=p_immunity,
                             latent_shape=4, infectious_shape=n, immune_shape=o, dt=dt, days=days, C=C, 
                             total_population=total_pop, p_age=p_age, I_init=I_init, Rt = Rt, 
-                            intervention = c(1,0.3,0.1,0.2), threshold = 500000, t_intervention = 60 )
+                            intervention = intervention, threshold = 500000, t_intervention = 60 )
 
 #plot total S, I, R over time (sum over age classes)
 S <- apply(out[,,"S"],1,sum)
@@ -74,6 +75,6 @@ lines(I~time)
 lines(R~time)
 
 #plot I for seperate age classes
-plot(log(out[,1,"I"])~time, type="l", ylim=c(0,13))
-for(k in 2:15){lines(log(out[,k,"I"])~time)}
+plot(out[,1,"I"]~time, type="l", ylim=c(0,700000))
+for(k in 2:15){lines(out[,k,"I"]~time)}
 
