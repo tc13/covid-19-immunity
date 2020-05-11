@@ -1,7 +1,7 @@
 ### Dynamics of SARS-CoV-2 with waning immunity
 ### Thomas Crellen thomas.crellen@bdi.ox.ac.uk, April 2020
 ### SEIRRS discrete time model, age structed for UK population, gamma (Erlang) distributed waiting times, two immunity classes
-### Model Scenarios
+### Model Scenarios with interventions
 
 #Clear R environment
 remove(list = ls())
@@ -19,7 +19,7 @@ load("data/BBC_contact_matrices_population_vector.RData")
 load("data/uk_population_size_by_age_2018.RData")
 
 #Source model functions
-source("age_structured_models/SEIRRS-discrete-age-structured-functions.R")
+source("age_structured_models/SEIRRS-discrete-age-interventions-functions.R")
 
 #parameters
 R0 <- 2.8                   #Basic reproduction number (in the absense of interventions) [From Petra]
@@ -32,9 +32,17 @@ o <- 2                      #Shape parameter, immune period
 dt <- 1                     #time period (days)
 days <- 400                 #number of days 
 time <- seq(1, days, dt)    #time vector
+Rt <- 0.8 #Effective reproduction number during intervention
 
 #Obtain overall contact matrix before and after interventions
 C <- make.intervention.matrix(BBC_contact_matrix, intervention = c(1,1,1,1))
+
+#Check Rt & beta after interventions
+C_i <- make.intervention.matrix(BBC_contact_matrix, intervention = c(1,0.3,0.1,0.2), R0=Rt)
+beta_Rt <- get_beta(C=C_i, p_age=p_age, gamma=1/gamma_recip, R0=Rt)
+eigen_int <- eigen(C_i)
+eig_int <- max(eigen_int$values)
+beta_Rt*eig_int/(1/gamma_recip)
 
 #Get total UK population
 total_pop <- sum(uk.pop.2018.count$total)
@@ -47,10 +55,11 @@ I_init <- c(0,0,0,0,50,50,50,50,50,50,50,50,0,0,0)
 p_immunity <- c(1, 1, 1, 1, 0.95, 0.95, 0.90, 0.85, 0.80, 0.75, 0.70, 0.70, 0.65, 0.60, 0.55)
 
 #SEIRRS age structure model
-out <- SEIRRS_age_structure(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, 
-                            immune_mean_1=90, immune_mean_2=180, p_immunity=p_immunity,
+out <- SEIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, 
+                            immune_mean_1=0, immune_mean_2=0, p_immunity=p_immunity,
                             latent_shape=4, infectious_shape=n, immune_shape=o, dt=dt, days=days, C=C, 
-                            total_population=total_pop, p_age=p_age, I_init=I_init)
+                            total_population=total_pop, p_age=p_age, I_init=I_init, Rt = Rt, 
+                            intervention = c(1,0.3,0.1,0.2), threshold = 500000, t_intervention = 60 )
 
 #plot total S, I, R over time (sum over age classes)
 S <- apply(out[,,"S"],1,sum)
@@ -65,5 +74,6 @@ lines(I~time)
 lines(R~time)
 
 #plot I for seperate age classes
-plot(out[,1,"I"]~time, type="l", ylim=c(0, 1000000))
-for(k in 2:15){lines(out[,k,"I"]~time)}
+plot(log(out[,1,"I"])~time, type="l", ylim=c(0,13))
+for(k in 2:15){lines(log(out[,k,"I"])~time)}
+
