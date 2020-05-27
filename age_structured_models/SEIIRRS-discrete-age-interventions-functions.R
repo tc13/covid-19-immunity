@@ -78,14 +78,27 @@ textNum <- function(text, num){
   return(v)
 }
 
+#check values are not less than 1 and integer
+checkInteger <- function(x){
+  if(x < 1){y <- 1}
+  else if(x%%1!=0){y <- round(x, digits = 0)} 
+  else y <- x
+  return(y)
+}
+
 #Main model function
 SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, immune_mean_1=90,
                                 immune_mean_2=180, latent_shape=4, infectious_shape=2, immune_shape=2,
                                 asymtomatic_relative_infectiousness=0.5, children_relative_susceptibility=0.4,
-                                dt=1, days=400, C, total_population=66435550, p_age, p_hospitalised, I_init,
+                                dt=1, days=400, BBC_contact_matrix, total_population=66435550, p_age, p_hospitalised, I_init,
                                 Rt_partial=1.2, Rt_full=0.8, intervention_partial=c(1,0.8,0.85,0.75), 
                                 intervention_full=c(0.8,0.3,0.1,0.2), threshold=10000, t_partial_intervention=14,
                                 t_full_intervention=60, rho=c(rep(0.25, 4),rep(0.5,11))){
+  
+  #check shape parameters are integer values and >=1
+  latent_shape = checkInteger(latent_shape)
+  infectious_shape = checkInteger(infectious_shape)
+  immune_shape = checkInteger(immune_shape)
   
   #susceptibility vector
   susceptibility <- c(rep(children_relative_susceptibility, 4), rep(1, 11))
@@ -94,6 +107,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   time <- seq(1, days, dt)
   
   #Transmission probability
+  C <- make.intervention.matrix(BBC_contact_matrix, intervention=c(1,1,1,1), R0=R0)
   beta <- get_beta(C=C, p_age=p_age, gamma=(1/infectious_mean), R0=R0)
   
   #Transmission probability with intervention
@@ -144,24 +158,29 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   for(t in 1:(length(time)-1)){
     
     #new symtomatic & asymtomatic infections per timestep
+    if(infectious_shape>1){
     I_symtomatic = apply(state[t,,Is.lab], 1, sum) #sum Is sub-classes
     I_asymtomatic = apply(state[t,,Ia.lab], 1, sum) #sum Is sub-classes
+    }else{
+      I_symtomatic = state[t,,Is.lab]
+      I_asymtomatic = state[t,,Ia.lab]
+      }
     
     #Check if infection threshold has been reached, set intervention periods
-    if(sum(I_symtomatic)>threshold & intervention_phase[t]==0){
+    if(sum(I_symtomatic)>=threshold & intervention_phase[t]==0){
       #Partial Intervention period - triggered by threshold
-      intervention_phase[(t+1):(t+partial_intervention_step)] <- 1
+      intervention_phase[(t+1):(t+t_partial_intervention_step)] <- 1
       #Full intervention period 
-      intervention_phase[(t+partial_intervention_step+1):(t+partial_intervention_step+t_full_intervention_step)] <- 2
+      intervention_phase[(t+t_partial_intervention_step+1):(t+t_partial_intervention_step+t_full_intervention_step)] <- 2
       #After full intervention; return to partial intervention Rt indefinately
-      intervention_phase[(t+partial_intervention_step+t_full_intervention_step+1):length(time)] <- 1
+      intervention_phase[(t+t_partial_intervention_step+t_full_intervention_step+1):length(time)] <- 1
     }
     
     #Transmission in absense of intervention
-    if(intervention_phase[t]==0){
+    if(intervention_phase[(t+1)]==0){
       lambda = beta * (as.matrix(C) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (R0)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
-    }else if(intervention_phase[t]==1){
+    }else if(intervention_phase[(t+1)]==1){
       #Transmission during partial intervention period 
       lambda = beta_partial * (as.matrix(C_partial) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
@@ -220,7 +239,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   }
   
   #Combine E, I, R substates into new array
-  state_names_SEIR <- state_names <- c("S", "E", "Is", "Ia", "Rh", "Rnh")
+  state_names_SEIR <- state_names <- c("S", "E", "Is", "Ia", "I", "Rh", "Rnh", "R")
   
   out <- array(data=0, dim = c(length(time), classes, length(state_names_SEIR)),
                dimnames = list(as.character(time), colnames(C), state_names_SEIR))
@@ -229,10 +248,12 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   for(i in 1:infectious_shape){out[,,"Is"] <- out[,,"Is"] + state[,,Is.lab[i]]}  
   for(i in 1:infectious_shape){out[,,"Ia"] <- out[,,"Ia"] + state[,,Ia.lab[i]]}  
   for(i in 1:immune_shape){out[,,"Rh"] <- out[,,"Rh"] + state[,,Rh.lab[i]]}  
-  for(i in 1:immune_shape){out[,,"Rnh"] <- out[,,"Rnh"] + state[,,Rnh.lab[i]]}  
+  for(i in 1:immune_shape){out[,,"Rnh"] <- out[,,"Rnh"] + state[,,Rnh.lab[i]]} 
+  out[,,"I"] <- out[,,"Is"] + out[,,"Ia"]
+  out[,,"R"] <- out[,,"Rh"] + out[,,"Rnh"]
   
   #Check population size (N) =  UK total pop
-  N = sum(out[(t+1),,])
+  N = sum(out[(t+1),,c("S", "E", "Is", "Ia", "Rh", "Rnh")])
   test_that("Final pop size (N) = UK Total", expect_equal(N, total_population))
   
   #Return out array
