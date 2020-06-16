@@ -49,15 +49,6 @@ get_eigen <- function(m){
 get_beta <- function(C, R0, mean_infectious, 
                      susceptibility, prop_asymtomatic, 
                      asymtomatic_infectiousness, p_age){ 
-  #arguments: matrix with average contacts by age group (C), 
-  #mean infection period, relative susceptibility of children, proportion asytomatic (vector)
-  #relative infectiousness of asymtomatics
-  
-  #Convert to probabilities (not sure if necessary - doesn't make a difference to beta)
-  #for(i in 1:n){
-  #  for(j in 1:n){
-  #    M[i,j] = C[i,j]*p_age[i]/p_age[j]}
-  #}
   
   #Calculate next generation matrix K
   K = matrix(data=0, nrow=nrow(C), ncol=ncol(C))
@@ -111,7 +102,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
                                 trigger="days", lockdown_day=75, p_age,
                                 asymtomatic_relative_infectiousness=0.5, children_relative_susceptibility=0.4,
                                 dt=1, days=400, BBC_contact_matrix, total_population=66435550, p_hospitalised, I_init,
-                                Rt_partial=1.2, Rt_full=0.8, intervention_partial=c(1,0.8,0.85,0.75), 
+                                Rt_post_lockdown=1.2, Rt_full=0.8, Rt_partial=1.2, intervention_post_lockdown=c(1,0.8,0.85,0.75), 
                                 intervention_full=c(0.8,0.3,0.1,0.2), threshold=80000, t_partial_intervention=14,
                                 t_full_intervention=60, phi=c(rep(0.75, 4),rep(0.5,11))){
   
@@ -132,16 +123,22 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
                   susceptibility=susceptibility, prop_asymtomatic=phi,p_age=p_age,
                   asymtomatic_infectiousness=asymtomatic_relative_infectiousness)
   
-  #Transmission probability with intervention
-  C_partial <- make.intervention.matrix(BBC_contact_matrix, intervention=intervention_partial)
-  beta_partial <- get_beta(C=C_partial, mean_infectious=infectious_mean, 
-                           susceptibility=susceptibility, prop_asymtomatic=phi, p_age=p_age,
-                           asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_partial)
+  #Transmission probability during lockdown
+  C_lockdown <- make.intervention.matrix(BBC_contact_matrix, intervention=intervention_full)
   
-  C_full <- make.intervention.matrix(BBC_contact_matrix, intervention=intervention_full)
-  beta_full <- get_beta(C=C_full, mean_infectious=infectious_mean, 
+  beta_half <- get_beta(C=C_lockdown, mean_infectious=infectious_mean, 
+                         susceptibility=susceptibility,prop_asymtomatic=phi, p_age=p_age,
+                         asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_partial)
+  
+  beta_nadir <- get_beta(C=C_lockdown, mean_infectious=infectious_mean, 
                         susceptibility=susceptibility,prop_asymtomatic=phi, p_age=p_age,
                         asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_full)
+  
+  #Transmission probability post lockdown
+  C_post_lockdown <- make.intervention.matrix(BBC_contact_matrix, intervention=intervention_post_lockdown)
+  beta_post_lockdown <- get_beta(C=C_post_lockdown, mean_infectious=infectious_mean, 
+                           susceptibility=susceptibility, prop_asymtomatic=phi, p_age=p_age,
+                           asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_post_lockdown)
   
   #Intervention time steps
   t_partial_intervention_step <- t_partial_intervention*(1/dt)
@@ -203,21 +200,21 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
     if(trigger=="threshold"){
     #Check if infection threshold has been reached, set intervention periods
     if(sum(I_symtomatic)>=threshold & intervention_phase[t]==0){
-      #Partial Intervention period - triggered by threshold
+      #Initial lockdown period - triggered by threshold
       intervention_phase[(t+1):(t+t_partial_intervention_step)] <- 1
       #Full intervention period 
       intervention_phase[(t+t_partial_intervention_step+1):(t+t_partial_intervention_step+t_full_intervention_step)] <- 2
       #After full intervention; return to partial intervention Rt indefinately
-      intervention_phase[(t+t_partial_intervention_step+t_full_intervention_step+1):length(time)] <- 1
+      intervention_phase[(t+t_partial_intervention_step+t_full_intervention_step+1):length(time)] <- 3
       }
     }else if(trigger=="days"){
       if((t*dt)==lockdown_day){
-        #Partial Intervention period - triggered by timing
+        #Initial lockdown period - triggered by timing
         intervention_phase[(t+1):(t+t_partial_intervention_step)] <- 1
         #Full intervention period 
         intervention_phase[(t+t_partial_intervention_step+1):(t+t_partial_intervention_step+t_full_intervention_step)] <- 2
         #After full intervention; return to partial intervention Rt indefinately
-        intervention_phase[(t+t_partial_intervention_step+t_full_intervention_step+1):length(time)] <- 1
+        intervention_phase[(t+t_partial_intervention_step+t_full_intervention_step+1):length(time)] <- 3
       }
     }
     
@@ -226,12 +223,16 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
       lambda = beta * (as.matrix(C) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (R0)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }else if(intervention_phase[(t+1)]==1){
-      #Transmission during partial intervention period 
-      lambda = beta_partial * (as.matrix(C_partial) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
+      #Transmission during initial lockdown period 
+      lambda = beta_half * (as.matrix(C_lockdown) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
+      new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
+    }else if(intervention_phase[(t+1)]==2){
+      #Transmission during full lockdown period 
+      lambda = beta_nadir * (as.matrix(C_lockdown) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }else{
-      #Transmission during full intervention period 
-      lambda = beta_full * (as.matrix(C_full) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
+      #Transmission after intervention period
+      lambda = beta_post_lockdown * (as.matrix(C_post_lockdown) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }
     
