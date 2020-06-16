@@ -5,4 +5,4 @@ Differential and difference equation models on the dynamics of SARS-CoV-2 that i
 - This repository is under active development and is subject to change as the analysis evolves
 ```
 
-After cloning the repository, run SEIIRRS-discrete-age-interventions-scenarios.R in RStudio. Install required packages lubrdiate and testthat. More instructions to follow
+After cloning the repository, run SEIIRRS-discrete-age-interventions-scenarios.R in RStudio. Install required packages lubridate and testthat. More instructions to follow
