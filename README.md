@@ -5,4 +5,6 @@ Differential and difference equation models on the dynamics of SARS-CoV-2 that i
 - This repository is under active development and is subject to change as the analysis evolves
 ```
 
-After cloning the repository, run any scripts in R studio. More instructions to follow
+After cloning the repository, run SEIIRRS-discrete-age-interventions-scenarios.R in RStudio. This script calls the functions in SEIIRRS-discrete-age-interventions-functions.R, which runs the age-structured discrete time model. 
+
+Install required packages lubridate and testthat. More instructions to follow
