@@ -9,12 +9,24 @@ require(scales)
 require(lubridate)
 library(dplyr)
 
-#set path to current folder
+#set path to parent folder
 dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(dir)
 
-#Model scenerios
-source("SEIIRRS-discrete-age-interventions-scenarios.R")
+######################################
+## UK Population & Contact Matrixes ##
+######################################
+load("data/BBC_contact_matrices_population_vector.RData")
+load("data/uk_population_size_by_age_2018.RData")
+total_pop <- sum(uk.pop.2018.count$total)   #Get total UK population
+p_age <- uk.pop.2018.count$total/total_pop  #Proportion of population in each age group
+
+####################################################
+## Source Model Functions, Parameters & Scenarios ##
+####################################################
+source("SEIIRRS-functions.R")
+source("SEIIRRS-parameters.R")
+source("SEIIRRS-scenarios.R")
 
 #Function to make axis numbers in scientific notation
 scientific <- function(x){
@@ -67,7 +79,6 @@ I_S3 <- apply(S3.R09[,,"I"],1,sum)
 I_S4 <- apply(S4.R09[,,"I"],1,sum)
 
 #Rt = 0.9
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-I-Rt-09.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(I_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", yaxt="n", cex.main=3,
      xlab="Date", ylab="Population Infected", cex.lab=2.5, ylim=c(0,45E4), yaxs="i",
@@ -78,18 +89,10 @@ lines(I_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 axis(2, y.vals, labels=y.labs, cex.axis=2.0) #y-axis scientific notation
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-#legend(x=c(as.Date("2020-11-15"), as.Date("2022-02-01")), y=c(242308, 432692), title="Immunity Scenario",
-#       legend=c(expression(paste("S1  ", omega^N, " = ", infinity, ",       ", omega^H," = ", infinity)), 
-#                expression(paste("S2  ", omega^N, " = ", 365^-1, ", ", omega^H," = ", infinity)), 
-#                expression(paste("S3  ", omega^N, " = ", 180^-1, ", ", omega^H," = ", infinity)), 
-#                expression(paste("S4  ", omega^N, " = ", 90^-1, ",   ", omega^H," = ", 365^-1))), 
-#       lty=1, lwd=c(3.2,3,3,3.2), cex=2.2,
-#       col=c("grey25","darkblue","darkgreen", "darkred"))
 legend(x=c(as.Date("2020-11-15"), as.Date("2022-02-01")), y=c(242308, 432692), title="Immunity Scenario",
        legend=c("S1: Complete", "S2: Waning (12 months)", "S3: Waning (6 months)", "S4: Short-lived"), 
        lty=1, lwd=c(3.7,3.5,3.5,3.7), cex=2.2,
        col=c("grey25","darkblue","darkgreen", "darkred"))
-dev.off()
 
 #Infection vectors
 I_S1 <- apply(S1.R10[,,"I"],1,sum)
@@ -98,7 +101,6 @@ I_S3 <- apply(S3.R10[,,"I"],1,sum)
 I_S4 <- apply(S4.R10[,,"I"],1,sum)
 
 #Rt = 1.0
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-I-Rt-10.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(I_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", yaxt="n", cex.main=3,
      xlab="Date", ylab="Population Infected", cex.lab=2.5, ylim=c(0,45E4), yaxs="i",
@@ -109,7 +111,6 @@ lines(I_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 axis(2, y.vals, labels=y.labs, cex.axis=2.0) #y-axis scientific notation
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #Infection vectors
 I_S1 <- apply(S1.R11[,,"I"],1,sum)
@@ -118,7 +119,6 @@ I_S3 <- apply(S3.R11[,,"I"],1,sum)
 I_S4 <- apply(S4.R11[,,"I"],1,sum)
 
 #Rt = 1.1
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-I-Rt-11.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(I_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", yaxt="n", cex.main=3,
      xlab="Date", ylab="Population Infected", cex.lab=2.5, ylim=c(0,45E4), yaxs="i",
@@ -129,7 +129,6 @@ lines(I_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 axis(2, y.vals, labels=y.labs, cex.axis=2.0) #y-axis scientific notation
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #Infection vectors
 I_S1 <- apply(S1.R12[,,"I"],1,sum)
@@ -138,7 +137,6 @@ I_S3 <- apply(S3.R12[,,"I"],1,sum)
 I_S4 <- apply(S4.R12[,,"I"],1,sum)
 
 #Rt = 1.2
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-I-Rt-12.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(I_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", yaxt="n", cex.main=3,
      xlab="Date", ylab="Population Infected", cex.lab=2.5, ylim=c(0,45E4), yaxs="i",
@@ -149,7 +147,6 @@ lines(I_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 axis(2, y.vals, labels=y.labs, cex.axis=2.0) #y-axis scientific notation
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 ########################
 ## Recovered (immune) ##
@@ -162,7 +159,6 @@ R_S3 <- apply(S3.R09[,,"R"],1,sum)/total_pop
 R_S4 <- apply(S4.R09[,,"R"],1,sum)/total_pop
 
 #Rt = 0.9
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-R-Rt-09.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(R_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", cex.main=3, cex.axis=2.0,
      xlab="Date", ylab="Proportion Immune", cex.lab=2.5, ylim=c(0,0.21), yaxs="i",
@@ -172,18 +168,10 @@ lines(R_S3~dates, col="darkgreen", lwd=3.5)
 lines(R_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-#legend(x=c(as.Date("2020-11-15"), as.Date("2022-02-01")), y=c(0.113, 0.202), title="Immunity Scenario",
-#       legend=c(expression(paste("S1  ", omega^N, " = ", infinity, ",       ", omega^H," = ", infinity)), 
-#                expression(paste("S2  ", omega^N, " = ", 365^-1, ", ", omega^H," = ", infinity)), 
-#                expression(paste("S3  ", omega^N, " = ", 180^-1, ", ", omega^H," = ", infinity)), 
-#                expression(paste("S4  ", omega^N, " = ", 90^-1, ",   ", omega^H," = ", 365^-1))), 
-#       lty=1, lwd=c(3.2,3,3,3.2), cex=2.2,
-#       col=c("grey25","darkblue","darkgreen", "darkred"))
 legend(x=c(as.Date("2020-11-15"), as.Date("2022-02-01")), y=c(0.113, 0.202), title="Immunity Scenario",
        legend=c("S1: Complete", "S2: Waning (12 months)", "S3: Waning (6 months)", "S4: Short-lived"), 
        lty=1, lwd=c(3.7,3.5,3.5,3.7), cex=2.2,
        col=c("grey25","darkblue","darkgreen", "darkred"))
-dev.off()
 
 #Recovered vector
 R_S1 <- apply(S1.R10[,,"R"],1,sum)/total_pop
@@ -192,7 +180,6 @@ R_S3 <- apply(S3.R10[,,"R"],1,sum)/total_pop
 R_S4 <- apply(S4.R10[,,"R"],1,sum)/total_pop
 
 #Rt = 1.0
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-R-Rt-10.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(R_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", cex.main=3, cex.axis=2.0,
      xlab="Date", ylab="Proportion Immune", cex.lab=2.5, ylim=c(0,0.21), yaxs="i",
@@ -202,7 +189,6 @@ lines(R_S3~dates, col="darkgreen", lwd=3.5)
 lines(R_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #Recovered vector
 R_S1 <- apply(S1.R11[,,"R"],1,sum)/total_pop
@@ -211,7 +197,6 @@ R_S3 <- apply(S3.R11[,,"R"],1,sum)/total_pop
 R_S4 <- apply(S4.R11[,,"R"],1,sum)/total_pop
 
 #Rt = 1.1
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-R-Rt-11.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(R_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", cex.main=3, cex.axis=2.0,
      xlab="Date", ylab="Proportion Immune", cex.lab=2.5, ylim=c(0,0.21), yaxs="i",
@@ -221,7 +206,6 @@ lines(R_S3~dates, col="darkgreen", lwd=3.5)
 lines(R_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #Recovered vector
 R_S1 <- apply(S1.R12[,,"R"],1,sum)/total_pop
@@ -230,7 +214,6 @@ R_S3 <- apply(S3.R12[,,"R"],1,sum)/total_pop
 R_S4 <- apply(S4.R12[,,"R"],1,sum)/total_pop
 
 #Rt = 1.2
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-3-R-Rt-12.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(R_S1~dates, type="l", col="grey25",lwd=3.5, xaxt = "n", cex.main=3, cex.axis=2.0,
      xlab="Date", ylab="Proportion Immune", cex.lab=2.5, ylim=c(0,0.21), yaxs="i",
@@ -240,13 +223,13 @@ lines(R_S3~dates, col="darkgreen", lwd=3.5)
 lines(R_S4~dates, col="darkred", lwd=3.5)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #########################################
 ## Immunity by age group when Rt = 1.2 ##
 #########################################
 col.vec <- c(rep("grey50",5),"darkorange","deepskyblue3","forestgreen", rep("grey50",6), "darkviolet")
 lwd.vec <- c(rep(1.5,5), 3, 3, 3, rep(1.5,6), 2.5)
+
 #Scenario 1, recovered
 pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S1-R12-R-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
@@ -266,7 +249,6 @@ legend(x=c(as.Date("2020-07-01"), as.Date("2021-01-01")),
 dev.off()
 
 #Infected
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S1-R12-I-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S1.R12[,1,"I"]/uk.pop.2018.count$total[1]~dates, type="l", ylim=c(0, 0.01), 
      col=col.vec[1], lwd=lwd.vec[1], xaxt = "n", cex.main=3, cex.axis=2.0, yaxs="i",
@@ -281,7 +263,6 @@ legend(x=c(as.Date("2020-07-01"), as.Date("2021-01-01")),
        y=c(0.006428571, 0.009714286), title = "Age groups", cex=1.5,
        legend = c("25-29 years", "30-34 years", "35-39 years", "70+ years", "Others"),
        lwd=c(3.2,3.2,3.2,3,2), col=c("darkorange","deepskyblue3","forestgreen", "darkviolet", "grey50"))
-dev.off()
 
 #scenario 2
 plot(S2.R12[,1,"R"]/uk.pop.2018.count$total[1]~time, type="l", ylim=c(0,0.35))
@@ -296,7 +277,6 @@ for(a in 2:15){
 }
 
 #scenario 4
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S4-R12-R-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S4.R12[,1,"R"]/uk.pop.2018.count$total[1]~dates, type="l", ylim=c(0,0.35), 
      col=col.vec[1], lwd=lwd.vec[1], xaxt = "n", cex.main=3, cex.axis=2.0,
@@ -307,10 +287,8 @@ for(a in 2:15){
 }
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #infected
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S4-R12-I-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S4.R12[,1,"I"]/uk.pop.2018.count$total[1]~dates, type="l", ylim=c(0, 0.01), 
      col=col.vec[1], lwd=lwd.vec[1], xaxt = "n", cex.main=3, cex.axis=2.0, yaxs="i",
@@ -321,7 +299,6 @@ for(a in 2:15){
 }
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #height of secondary peak
 S1.R12.ni <- apply(S1.R12[,,"new_infections"],1,sum)
@@ -373,7 +350,6 @@ S2_eq_date = dates[min(which(S_S2<equil))]
 S3_eq_date = dates[min(which(S_S3<equil))]
 S4_eq_date = dates[min(which(S_S4<equil))]
 
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Rt12-S-turnover.pdf", height=7, width=10)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S_S1~dates, type="l", lwd=3, ylim=c(0.8,1), col="grey25", xaxt="n",cex.lab=2, 
      cex.axis=2, cex.main=2, ylab="Proportion susceptible", xlab="Date",
@@ -386,7 +362,6 @@ axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2) #x-axis dates
 abline(v=c(S1_eq_date, S2_eq_date, S3_eq_date, S4_eq_date), lwd=2, lty=2, 
        col=c("grey25", "darkblue", "darkgreen", "darkred"))
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2)
-dev.off()
 
 #Infection vectors
 I_S1.p <- apply(S1.R12[,,"I"],1,sum)/total_pop
@@ -395,7 +370,6 @@ I_S3.p <- apply(S3.R12[,,"I"],1,sum)/total_pop
 I_S4.p <- apply(S4.R12[,,"I"],1,sum)/total_pop
 
 #Rt = 1.2
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Rt12-I-turnover.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(I_S1~dates, type="l", col="grey25",lwd=3, xaxt = "n", yaxt="n", cex.main=2,
      xlab="Date", ylab="Population Infected", cex.lab=2, ylim=c(0,45E4), yaxs="i",
@@ -408,10 +382,8 @@ axis(2, y.vals, labels=y.labs, cex.axis=2) #y-axis scientific notation
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2)
 abline(v=c(S1_eq_date, S2_eq_date, S3_eq_date, S4_eq_date), lwd=2, lty=2, 
        col=c("grey25", "darkblue", "darkgreen", "darkred"))
-dev.off()
 
 #Plot of I vs S
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/phase-plot-Rt12.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(S_S1,I_S1.p, type="l", lwd=3, xlim=c(0.75,1), ylim=c(0,0.0065), col="grey25", 
      cex.lab=2, cex.axis=2, cex.main=2,
@@ -427,7 +399,6 @@ legend(x=c(0.743,0.829), y=c(0.004,0.006), title="Immunity Scenario",
                 expression(paste("S4  ", omega^N, " = ", 90^-1, ",   ", omega^H," = ", 365^-1))), 
        lty=1, lwd=c(3.2,3,3,3.2), cex=1.24,
        col=c("grey25","darkblue","darkgreen", "darkred"))
-dev.off()
 
 #incidence of new cases
 New_S1 <- apply(S1.R12[,,"new_infections"],1,sum)
@@ -452,7 +423,6 @@ E_S2 <- apply(S2.R12[,,"E"],1,sum)/total_pop
 E_S3 <- apply(S3.R12[,,"E"],1,sum)/total_pop
 E_S4 <- apply(S4.R12[,,"E"],1,sum)/total_pop
 
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Rt12-E-turnover.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0)) #set font and plotting margin
 plot(E_S1~dates, type="l", lwd=3, ylim=c(0,0.01), col="grey25", 
      cex.lab=2, cex.axis=2, cex.main=2, xaxt = "n",
@@ -464,7 +434,6 @@ axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2) #x-axis dates
 abline(v=c(S1_eq_date, S2_eq_date, S3_eq_date, S4_eq_date), lwd=2, lty=2, 
        col=c("grey25", "darkblue", "darkgreen", "darkred"))
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
 
 #Susceptible when Rt=1.1
 S_S1 <- apply(S1.R11[,,"S"],1,sum)/total_pop
@@ -477,19 +446,4 @@ lines(S_S2~dates, lwd=2, col="darkblue")
 lines(S_S3~dates, lwd=2, col="darkgreen")
 lines(S_S4~dates, lwd=2, col="darkred")
 abline(h = 1/1.1, lty=2)
-
-#for higher values of Rt
-source("/Users/tomc/Documents/covid-19-immunity/SEIIRRS-discrete-age-interventions-scenarios-higher-Rt.R")
-
-#Susceptible when Rt=1.3
-S_S1 <- apply(S1.R13[,,"S"],1,sum)/total_pop
-S_S2 <- apply(S2.R13[,,"S"],1,sum)/total_pop
-S_S3 <- apply(S3.R13[,,"S"],1,sum)/total_pop
-S_S4 <- apply(S4.R13[,,"S"],1,sum)/total_pop
-
-plot(S_S1~dates, type="l", lwd=2, ylim=c(0.7,1), col="grey25")
-lines(S_S2~dates, lwd=2, col="darkblue")
-lines(S_S3~dates, lwd=2, col="darkgreen")
-lines(S_S4~dates, lwd=2, col="darkred")
-abline(h = 1/1.3, lty=2)
 

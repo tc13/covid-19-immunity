@@ -74,7 +74,7 @@ get_beta <- function(C, R0, mean_infectious,
 #Get omega function
 get_omega <- function(mean, shape, dt){
   if(mean<=0) omega <- 0
-  else omega <- (1/mean)*shape*dt
+  else omega <- mean/shape*dt
   return(omega)
 }
 
@@ -144,9 +144,9 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   t_partial_intervention_step <- t_partial_intervention*(1/dt)
   t_full_intervention_step <- t_full_intervention*(1/dt)
 
-  #Update parameter values (incoporating gamma shape and dt interval)
-  sigma <- (1/latent_mean) * latent_shape * dt               #probability of becoming infectious
-  gamma <- (1/infectious_mean) * infectious_shape * dt       #probability of recovery
+  #Update parameter values (incoporating gamma shape and dt interval) - see Krylova & Earn 2013 - https://royalsocietypublishing.org/doi/pdf/10.1098/rsif.2013.0098
+  sigma <- latent_mean/latent_shape * dt               #probability of becoming infectious
+  gamma <- infectious_mean/infectious_shape * dt       #probability of recovery
   omega_1 <- get_omega(mean=immune_mean_1, shape=immune_shape, dt=dt)   #Duration of immunity in R class 1
   omega_2 <- get_omega(mean=immune_mean_2, shape=immune_shape, dt=dt)   #Duration of immunity in R class 2
   classes <- length(p_age)                #number of age classes
