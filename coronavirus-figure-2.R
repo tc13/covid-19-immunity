@@ -63,7 +63,7 @@ immune_mean_2=180
 immune_mean_3=90
 
 #density plots
-curve(dgamma(x, shape=m, rate=m/sigma_recip), from=0,to=20)
+curve(dgamma(x, shape=m, rate= m/sigma_recip), from=0,to=20)
 curve(dgamma(x, shape=n, rate=n/gamma_recip), from=0,to=20)
 curve(dgamma(x, shape=o, rate=o/immune_mean_1), from=0,to=365*2)
 curve(dgamma(x, shape=o, rate=o/immune_mean_2), from=0,to=365*2)
