@@ -42,13 +42,17 @@ dates <- seq(ymd(start_date),ymd(start_date+(days-1)), by = as.difftime(hours(ho
 #New infection on lockdown day
 new_infections <- apply(S1.R10[,,"new_infections"],1,sum)
 new_infections_adults <- apply(S1.R10[,c(5:15),"new_infections"],1,sum)
-new_infections[lockdown_day]
+new_infections[lockdown_day] #96,000
+
+#Total infectious individuals
+I <- apply(S1.R10[,,"Is"]+S1.R10[,,"Ia"],1,sum)
+I[lockdown_day] #124,000
 
 #cumulative infections
 start_cum_date <- "2020-02-16"
 which(dates==start_cum_date)
-sum(new_infections[which(dates==start_cum_date):which(dates==date_UK_lockdown)])
-sum(new_infections_adults[which(dates==start_cum_date):which(dates==date_UK_lockdown)])
+sum(new_infections[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #717,000
+sum(new_infections_adults[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #679,000
 
 #Recovered (ages 19+)
 recovered_19plus <- apply(S1.R10[,c(5:15),"R"],1,sum)
@@ -58,11 +62,6 @@ recovered_19plus[which(dates==end_lockdown)]/sum(uk.pop.2018.count$total[5:15])
 sum(new_infections[1:which(dates==end_lockdown)])
 recovered_all <- apply(S1.R10[,,"R"],1,sum)
 recovered_all[which(dates==end_lockdown)]/total_pop
-
-#percentage of pop infected - Imperial Report 13
-imp_date <- "2020-03-28"
-date_num <- which(dates==imp_date)
-I_S1[date_num]/total_pop*100
 
 ##########################
 ## Infected by Rt value ##
@@ -245,12 +244,12 @@ S1.R12.AG[[8]] <- S1.R12[,15,"R"]/uk.pop.2018.count$total[15]
 col.vec.8 <- c(rep("grey50",2),"darkorange","forestgreen", rep("grey50",3), "darkviolet")
 lwd.vec.8 <- c(rep(1.5,2), 3, 3, rep(1.5,3), 3)
 
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S1-R12-R-age-groups.pdf", height=8, width=11)
+#pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S1-R12-R-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S1.R12.AG[[1]]~dates, type="l", ylim=c(0,0.35), 
      col=col.vec.8[1], lwd=lwd.vec.8[1], xaxt = "n", cex.main=3, cex.axis=2.0,
      xlab="Date", ylab="Proportion of age group immune", cex.lab=2.5, yaxs="i",
-     main=expression(paste("Scenario 1, Post-lockdown R"[t]," = 1.2")))
+     main=expression(paste("Immunity Scenario 1, Post-lockdown R"[t]," = 1.2")))
 for(a in 2:8){
   lines(S1.R12.AG[[a]]~dates, col=col.vec.8[a], lwd=lwd.vec.8[a])
 }
@@ -260,7 +259,7 @@ legend(x=c(as.Date("2020-07-01"), as.Date("2021-01-01")),
        y=c(0.24, 0.34), title = "Age groups", cex=1.5,
        legend = c("20-29 years", "30-39 years", "70+ years", "Others"),
        lwd=c(3.2,3.2,3.2,3,2), col=c("darkorange","forestgreen", "darkviolet", "grey50"))
-dev.off()
+#dev.off()
 
 #Binning age groups into 10 years- immune
 S4.R12.AG <- list()
@@ -273,18 +272,18 @@ S4.R12.AG[[6]] <- (S4.R12[,11,"R"]+S4.R12[,12,"R"])/(uk.pop.2018.count$total[11]
 S4.R12.AG[[7]] <- (S4.R12[,13,"R"]+S4.R12[,14,"R"])/(uk.pop.2018.count$total[13]+uk.pop.2018.count$total[14])
 S4.R12.AG[[8]] <- S4.R12[,15,"R"]/uk.pop.2018.count$total[15]
 
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S4-R12-R-age-groups.pdf", height=8, width=11)
+#pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S4-R12-R-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S4.R12.AG[[1]]~dates, type="l", ylim=c(0,0.35), 
      col=col.vec.8[1], lwd=lwd.vec.8[1], xaxt = "n", cex.main=3, cex.axis=2.0,
      xlab="Date", ylab="Proportion of age group immune", cex.lab=2.5, yaxs="i",
-     main=expression(paste("Scenario 1, Post-lockdown R"[t]," = 1.2")))
+     main=expression(paste("Immunity Scenario 4, Post-lockdown R"[t]," = 1.2")))
 for(a in 2:8){
   lines(S4.R12.AG[[a]]~dates, col=col.vec.8[a], lwd=lwd.vec.8[a])
 }
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
+#dev.off()
 
 #Binning age groups into 10 years- infected
 S1.R12.AG[[9]] <- (S1.R12[,1,"I"]+S1.R12[,2,"I"])/(uk.pop.2018.count$total[1]+uk.pop.2018.count$total[2])
@@ -296,12 +295,12 @@ S1.R12.AG[[14]] <- (S1.R12[,11,"I"]+S1.R12[,12,"I"])/(uk.pop.2018.count$total[11
 S1.R12.AG[[15]] <- (S1.R12[,13,"I"]+S1.R12[,14,"I"])/(uk.pop.2018.count$total[13]+uk.pop.2018.count$total[14])
 S1.R12.AG[[16]] <- S1.R12[,15,"I"]/uk.pop.2018.count$total[15]
 
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S1-R12-I-age-groups.pdf", height=8, width=11)
+#pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S1-R12-I-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S1.R12.AG[[9]]~dates, type="l", ylim=c(0, 0.01), 
      col=col.vec.8[1], lwd=lwd.vec.8[1], xaxt = "n", cex.main=3, cex.axis=2.0, yaxs="i",
      xlab="Date", ylab="Proportion of age group infected", cex.lab=2.5,
-     main=expression(paste("Scenario 1, Post-lockdown R"[t]," = 1.2")))
+     main=expression(paste("Immunity Scenario 1, Post-lockdown R"[t]," = 1.2")))
 for(a in 2:8){
   lines(S1.R12.AG[[(a+8)]]~dates, col=col.vec.8[a], lwd=lwd.vec.8[a])
 }
@@ -311,7 +310,7 @@ legend(x=c(as.Date("2020-07-01"), as.Date("2021-01-01")),
        y=c(0.006857143, 0.009714286), title = "Age groups", cex=1.5,
        legend = c("20-29 years", "30-39 years", "70+ years", "Others"),
        lwd=c(3.2,3.2,3.2,3,2), col=c("darkorange","forestgreen", "darkviolet", "grey50"))
-dev.off()
+#dev.off()
 
 #Binning age groups into 10 years- infected
 S4.R12.AG[[9]] <- (S4.R12[,1,"I"]+S4.R12[,2,"I"])/(uk.pop.2018.count$total[1]+uk.pop.2018.count$total[2])
@@ -323,18 +322,18 @@ S4.R12.AG[[14]] <- (S4.R12[,11,"I"]+S4.R12[,12,"I"])/(uk.pop.2018.count$total[11
 S4.R12.AG[[15]] <- (S4.R12[,13,"I"]+S4.R12[,14,"I"])/(uk.pop.2018.count$total[13]+uk.pop.2018.count$total[14])
 S4.R12.AG[[16]] <- S4.R12[,15,"I"]/uk.pop.2018.count$total[15]
 
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S4-R12-I-age-groups.pdf", height=8, width=11)
+#pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-S4-R12-I-age-groups.pdf", height=8, width=11)
 par(family = "serif", mar=c(5.0, 4.6, 4.0, 2.0))
 plot(S4.R12.AG[[9]]~dates, type="l", ylim=c(0, 0.01), 
      col=col.vec.8[1], lwd=lwd.vec.8[1], xaxt = "n", cex.main=3, cex.axis=2.0, yaxs="i",
      xlab="Date", ylab="Proportion of age group infected", cex.lab=2.5,
-     main=expression(paste("Scenario 1, Post-lockdown R"[t]," = 1.2")))
+     main=expression(paste("Immunity Scenario 4, Post-lockdown R"[t]," = 1.2")))
 for(a in 2:8){
   lines(S4.R12.AG[[(a+8)]]~dates, col=col.vec.8[a], lwd=lwd.vec.8[a])
 }
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-dev.off()
+#dev.off()
 
 ##############################
 ## Height of secondary peak ##

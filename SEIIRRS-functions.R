@@ -98,13 +98,15 @@ checkInteger <- function(x){
 
 #Main model function
 SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, immune_mean_1=90,
-                                immune_mean_2=180, latent_shape=4, infectious_shape=2, immune_shape=2,
-                                trigger="days", lockdown_day=75, p_age,
-                                asymtomatic_relative_infectiousness=0.5, children_relative_susceptibility=0.4,
-                                dt=1, days=400, BBC_contact_matrix, total_population=66435550, p_hospitalised, I_init,
-                                Rt_post_lockdown=1.2, Rt_full=0.8, Rt_partial=1.2, intervention_post_lockdown=c(1,0.8,0.85,0.75), 
-                                intervention_full=c(0.8,0.3,0.1,0.2), threshold=80000, t_partial_intervention=14,
-                                t_full_intervention=60, phi=c(rep(0.75, 4),rep(0.5,11))){
+                                immune_mean_2=180, latent_shape=4, infectious_shape=2, 
+                                immune_shape=2, trigger="days", lockdown_day=75, p_age,
+                                asymtomatic_relative_infectiousness=0.5, 
+                                children_relative_susceptibility=0.4,t_full_intervention=60,
+                                dt=1, days=400, BBC_contact_matrix, total_population=66435550, 
+                                p_hospitalised, I_init, Rt_post_lockdown=1.2, Rt_full=0.8, 
+                                Rt_partial=1.2, intervention_post_lockdown=c(1,0.8,0.85,0.75), 
+                                intervention_full=c(0.8,0.3,0.1,0.2), threshold=80000, 
+                                t_partial_intervention=14, phi=c(rep(0.75, 4),rep(0.5,11))){
   
   #check shape parameters are integer values and >=1
   latent_shape = checkInteger(latent_shape)
@@ -270,8 +272,8 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
     }
     
     #Duration of immunity, first classes
-    state[(t+1),,"Rh1"] = state[t,,"Rh1"] + (p_hospitalised/phi)*gamma*state[t,,Is.lab[infectious_shape]] - state[t,,"Rh1"]*omega_1
-    state[(t+1),,"Rnh1"] = state[t,,"Rnh1"] + gamma*state[t,,Ia.lab[infectious_shape]]+ (1-(p_hospitalised/phi))*gamma*state[t,,Is.lab[infectious_shape]] - state[t,,"Rnh1"]*omega_2
+    state[(t+1),,"Rh1"] = state[t,,"Rh1"] + (p_hospitalised/(1-phi))*gamma*state[t,,Is.lab[infectious_shape]] - state[t,,"Rh1"]*omega_1
+    state[(t+1),,"Rnh1"] = state[t,,"Rnh1"] + gamma*state[t,,Ia.lab[infectious_shape]]+ (1-(p_hospitalised/(1-phi)))*gamma*state[t,,Is.lab[infectious_shape]] - state[t,,"Rnh1"]*omega_2
     if(immune_shape>1){
       for(k in 2:immune_shape){
         state[(t+1),,Rh.lab[k]] = state[t,,Rh.lab[k]] + omega_1*(state[t,,Rh.lab[(k-1)]] - state[t,,Rh.lab[k]])

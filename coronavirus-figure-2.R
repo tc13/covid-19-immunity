@@ -92,14 +92,14 @@ period.df <- data.frame(time=time, latent=n_latent, infectious=n_infectious)
 period.m <- melt(data = period.df, id.vars = "time")
 
 #Base R
-pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-E-I-state-plots.pdf", height=9, width=11)
+#pdf("/Users/tomc/Google Drive/coronavirus/Figures/Fig-E-I-state-plots.pdf", height=9, width=11)
 par(family = "serif", mar=c(5.0, 5.0, 3.0, 2.0))
 plot(n_latent/N~time, type="l", lwd=3, xlab="Time since infection (days)", ylim=c(0.02,0.98), 
      ylab="Proportion", xlim=c(1,20), cex.main=2, cex.lab=2.5, cex.axis=2)
 lines(n_infectious/N~time, lwd=3, lty=4)
 legend(x=c(14,20), y=c(0.75, 1), legend = c("Exposed", "Infectious"), 
        lty=c(1,4), lwd=c(3,3), title="Disease State", cex=2)
-dev.off()
+#dev.off()
 
 #waning immunity
 x <- seq(0,365*4,by=0.5)

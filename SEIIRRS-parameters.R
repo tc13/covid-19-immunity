@@ -15,6 +15,7 @@ p_hosp <- c(0.001, 0.001, 0.003, 0.003, 0.012, 0.012, 0.032, 0.032, 0.049, 0.049
 phi <- c(rep(0.75, 4),rep(0.5,11))  #proportion asymtomatic | infection by age group
 crs <- 0.4                          #children relative susceptibility
 ari <- 0.5                          #asymtomatic relative infectiousness
+susceptibility <- c(rep(crs, 4), rep(1, 11))
 
 ############################
 ## Intervention variables ##
