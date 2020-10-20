@@ -48,7 +48,7 @@ get_eigen <- function(m){
 #Calculate transmission parameter
 get_beta <- function(C, R0, mean_infectious, 
                      susceptibility, prop_asymtomatic, 
-                     asymtomatic_infectiousness, p_age){ 
+                     asymtomatic_infectiousness){ 
   
   #Calculate next generation matrix K
   K = matrix(data=0, nrow=nrow(C), ncol=ncol(C))
@@ -71,7 +71,7 @@ get_beta <- function(C, R0, mean_infectious,
   return(beta)
 }
 
-#Get omega function
+#Get omega function (rate of immunity decay)
 get_omega <- function(mean, shape, dt){
   if(mean<=0) omega <- 0
   else omega <- (1/mean)*shape*dt
@@ -119,34 +119,34 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   #time vector
   time <- seq(1, days, dt)
   
-  #Contact matrix & transmission parameter
+  #Contact matrix & transmission parameter (beta = probability of infection, given contact)
   C = make.intervention.matrix(BBC_contact_matrix, intervention=c(1,1,1,1))
   beta = get_beta(C=C, R0=R0, mean_infectious=infectious_mean, 
-                  susceptibility=susceptibility, prop_asymtomatic=phi,p_age=p_age,
+                  susceptibility=susceptibility, prop_asymtomatic=phi,
                   asymtomatic_infectiousness=asymtomatic_relative_infectiousness)
   
   #Transmission probability during lockdown
   C_lockdown <- make.intervention.matrix(BBC_contact_matrix, intervention=intervention_full)
   
   beta_half <- get_beta(C=C_lockdown, mean_infectious=infectious_mean, 
-                         susceptibility=susceptibility,prop_asymtomatic=phi, p_age=p_age,
+                         susceptibility=susceptibility,prop_asymtomatic=phi,
                          asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_partial)
   
   beta_nadir <- get_beta(C=C_lockdown, mean_infectious=infectious_mean, 
-                        susceptibility=susceptibility,prop_asymtomatic=phi, p_age=p_age,
+                        susceptibility=susceptibility,prop_asymtomatic=phi,
                         asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_full)
   
   #Transmission probability post lockdown
   C_post_lockdown <- make.intervention.matrix(BBC_contact_matrix, intervention=intervention_post_lockdown)
   beta_post_lockdown <- get_beta(C=C_post_lockdown, mean_infectious=infectious_mean, 
-                           susceptibility=susceptibility, prop_asymtomatic=phi, p_age=p_age,
+                           susceptibility=susceptibility, prop_asymtomatic=phi,
                            asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_post_lockdown)
   
   #Intervention time steps
   t_partial_intervention_step <- t_partial_intervention*(1/dt)
   t_full_intervention_step <- t_full_intervention*(1/dt)
 
-  #Update parameter values (incoporating gamma shape and dt interval) - see Krylova & Earn 2013 - https://royalsocietypublishing.org/doi/pdf/10.1098/rsif.2013.0098
+  #Update gamma (Erlang) distribution parameter values (incoporating gamma shape and dt interval) - see Krylova & Earn 2013 - https://royalsocietypublishing.org/doi/pdf/10.1098/rsif.2013.0098
   sigma <- (1/latent_mean) * latent_shape * dt               #probability of becoming infectious
   gamma <- (1/infectious_mean) * infectious_shape * dt       #probability of recovery
   omega_1 <- get_omega(mean=immune_mean_1, shape=immune_shape, dt=dt)   #Duration of immunity in R class 1
@@ -163,7 +163,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   
   state_names <- c("S", E.lab, Ia.lab, Is.lab, Rnh.lab, Rh.lab)
   n_states <- length(state_names)
-  state <- array(data=0, dim=c(length(time), classes, n_states), #rows are times, columns are age classes, matrixes are disease states
+  state <- array(data=0, dim=c(length(time), classes, n_states), #rows are times, columns are age classes, matrices are disease states
                  dimnames = list(as.character(time), colnames(C), state_names))
   
   #Array for daily new infections and new hospitalisations
@@ -173,7 +173,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   #State variables at t=0
   state[1,,"S"] <- N_age #susceptible absolute numbers
   
-  #Initialise infections by age group with I_init vector
+  #Initialise infections by age group with I_init (initial number of infections) vector
   state[1,,"S"] <- state[1,,"S"]- I_init
   for(j in 1:infectious_shape){
     state[1,,Is.lab[j]] <- I_init*(1-phi)/infectious_shape
@@ -282,13 +282,13 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
     }
     
     #update daily counts of hospitalisation
-    daily_counts[(t+1),,"new_hospitalisations"] <- (p_hospitalised/phi)*gamma*state[t,,Is.lab[infectious_shape]]
+    daily_counts[(t+1),,"new_hospitalisations"] <- (p_hospitalised/(1-phi))*gamma*state[t,,Is.lab[infectious_shape]]
     
     #Check population size (N) =  UK total pop
     N = sum(state[(t+1),,])
     test_that("Pop size (N) = Pop size", expect_equal(N, total_population))
     
-    #Test that no state value is negative
+    #Test that state values are positive
     test_that("States non-negative", expect_true(all(state[(t+1),,]>=0)))
   }
   
