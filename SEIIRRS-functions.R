@@ -1,5 +1,6 @@
 ### Dynamics of SARS-CoV-2 with waning immunity
-### Thomas Crellen thomas.crellen@bdi.ox.ac.uk, April 2020
+### Thomas Crellen, University of Oxford, thomas.crellen@bdi.ox.ac.uk, April 2020
+### Adapted from code by Drs Kiesha Prem and Petra Klepac (LSHTM)
 ### SEIIRRS discrete time model, age structed for UK population, gamma distributed waiting times, 
 ### Two infected (symtomatic & asymptomatic) and immunity classes, children are less susceptible to infection than adults (though equally infectious)
 ### Interventions: Model functions
