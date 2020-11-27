@@ -44,26 +44,26 @@ dates <- seq(ymd(start_date),ymd(start_date+(days-1)), by = as.difftime(hours(ho
 #New infection on lockdown day
 new_infections <- apply(S1.R10[,,"new_infections"],1,sum)
 new_infections_adults <- apply(S1.R10[,c(5:15),"new_infections"],1,sum)
-new_infections[lockdown_day] #96,000
+new_infections[lockdown_day] #91,000
 
 #Total infectious individuals
 I <- apply(S1.R10[,,"I"],1,sum)
-I[lockdown_day] #124,000
+I[lockdown_day] #117,000
 
 #cumulative infections
 start_cum_date <- "2020-02-16"
 which(dates==start_cum_date)
-sum(new_infections[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #717,000
-sum(new_infections_adults[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #679,000
+sum(new_infections[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #676,000
+sum(new_infections_adults[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #633,000
 
 #Recovered (ages 19+)
 recovered_19plus <- apply(S1.R10[,c(5:15),"R"],1,sum)
 end_lockdown <- as.Date(date_UK_lockdown)+(tpi+tfi) 
 which(dates==end_lockdown)
-recovered_19plus[which(dates==end_lockdown)]/sum(uk.pop.2018.count$total[5:15])
+recovered_19plus[which(dates==end_lockdown)]/sum(uk.pop.2018.count$total[5:15]) #6.3% of adults with immunity
 sum(new_infections[1:which(dates==end_lockdown)])
 recovered_all <- apply(S1.R10[,,"R"],1,sum)
-recovered_all[which(dates==end_lockdown)]/total_pop
+recovered_all[which(dates==end_lockdown)]/total_pop #5.2% of the total population with immunity
 
 ####################
 ## Secondary Peak ##
@@ -71,23 +71,23 @@ recovered_all[which(dates==end_lockdown)]/total_pop
 
 #If Rt=1.2
 #In immunity scenario 4
-max(apply(S4.R12[,,"I"],1,sum)) #409,000
-max(apply(S4.R12[,,"new_infections"],1,sum)) #133,000
+max(apply(S4.R12[,,"I"],1,sum)) #393,000
+max(apply(S4.R12[,,"new_infections"],1,sum)) #128,000
 #In immunity scenario 1, restrict time to after lockdown- days 130-730
-max(apply(S1.R12[,,"I"],1,sum)[130:730]) #138,000
-max(apply(S1.R12[,,"new_infections"],1,sum)[130:730]) #45,000
+max(apply(S1.R12[,,"I"],1,sum)[130:730]) #133,000
+max(apply(S1.R12[,,"new_infections"],1,sum)[130:730]) #43,000
 
 #If Rt=1.1, examine figures in April 2021
 april_2021_indx <- which(dates>="2021-04-01"&dates<="2021-04-30")
 #In immunity scenario 4
-max(apply(S4.R11[,,"I"],1,sum)[april_2021_indx]) #161,000
-max(apply(S4.R11[,,"new_infections"],1,sum)[april_2021_indx]) #52,000
+max(apply(S4.R11[,,"I"],1,sum)[april_2021_indx]) #155,000
+max(apply(S4.R11[,,"new_infections"],1,sum)[april_2021_indx]) #50,000
 #In immunity scenario 1
-max(apply(S1.R11[,,"I"],1,sum)[april_2021_indx]) #18,000
+max(apply(S1.R11[,,"I"],1,sum)[april_2021_indx]) #17,000
 max(apply(S1.R11[,,"new_infections"],1,sum)[april_2021_indx]) #6,000
 
-160981.7/17936.43 #nine-fold difference in number infected
-52439.6/5720.272 #nine-fold difference in new cases
+154648.1/17486.93 #nine-fold difference in number infected
+50376.33/5578.428 #nine-fold difference in new cases
 
 ####################################
 ## Proportion of Age group immune ##
@@ -532,4 +532,46 @@ lines(S_S2~dates, lwd=2, col="blue4")
 lines(S_S3~dates, lwd=2, col="green4")
 lines(S_S4~dates, lwd=2, col="red3")
 abline(h = 1/1.1, lty=2)
+
+########################
+## Smaller time steps ##
+########################
+
+S4.R12.dt25 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=1, infectious_shape=1, #Natural history parameters
+                                   p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
+                                   immune_mean_1=0, immune_mean_2=0, immune_shape=1, #scenario specific immune duration
+                                   dt=0.25, days=days, #times
+                                   BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
+                                   Rt_post_lockdown=1.2, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
+                                   Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
+                                   trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
+
+S4.R12.dt10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=1, infectious_shape=1, #Natural history parameters
+                               p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
+                               immune_mean_1=0, immune_mean_2=0, immune_shape=1, #scenario specific immune duration
+                               dt=0.1, days=days, #times
+                               BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
+                               Rt_post_lockdown=1.2, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
+                               Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
+                               trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
+
+
+S4.R12.dt01 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=1, infectious_shape=1, #Natural history parameters
+                                    p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
+                                    immune_mean_1=0, immune_mean_2=0, immune_shape=1, #scenario specific immune duration
+                                    dt=0.1, days=days, #times
+                                    BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
+                                    Rt_post_lockdown=1.2, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
+                                    Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
+                                    trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
+
+
+par(mfrow=c(3,1))
+plot( apply(S4.R12.dt25[,,"I"],1,sum))
+plot( apply(S4.R12.dt10[,,"I"],1,sum))
+plot( apply(S4.R12.dt01[,,"I"],1,sum))
+
+plot( apply(S4.R12.dt25[,,"new_infections"],1,sum))
+plot( apply(S4.R12.dt10[,,"new_infections"],1,sum))
+plot( apply(S4.R12.dt01[,,"new_infections"],1,sum))
 

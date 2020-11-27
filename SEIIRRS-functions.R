@@ -114,6 +114,9 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   infectious_shape = checkInteger(infectious_shape)
   immune_shape = checkInteger(immune_shape)
   
+  #Fix time step during development
+  dt = 1
+  
   #susceptibility vector
   susceptibility <- c(rep(children_relative_susceptibility, 4), rep(1, 11))
 
@@ -149,7 +152,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
 
   #Update gamma (Erlang) distribution parameter values (incoporating gamma shape and dt interval) - see Krylova & Earn 2013 - https://royalsocietypublishing.org/doi/pdf/10.1098/rsif.2013.0098
   sigma <- (1/latent_mean) * latent_shape * dt               #probability of becoming infectious
-  gamma <- (1/infectious_mean) * infectious_shape * dt       #probability of recovery
+  gamma <- (1/infectious_mean) * infectious_shape * dt        #probability of recovery
   omega_1 <- get_omega(mean=immune_mean_1, shape=immune_shape, dt=dt)   #Duration of immunity in R class 1
   omega_2 <- get_omega(mean=immune_mean_2, shape=immune_shape, dt=dt)   #Duration of immunity in R class 2
   classes <- length(p_age)                #number of age classes
@@ -223,19 +226,19 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
     
     #Transmission in absense of intervention
     if(intervention_phase[(t+1)]==0){
-      lambda = beta * (as.matrix(C) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (R0)
+      lambda = beta * C %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (R0)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }else if(intervention_phase[(t+1)]==1){
       #Transmission during initial lockdown period 
-      lambda = beta_half * (as.matrix(C_lockdown) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
+      lambda = beta_half * C_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (Rt)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }else if(intervention_phase[(t+1)]==2){
       #Transmission during full lockdown period 
-      lambda = beta_nadir * (as.matrix(C_lockdown) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
+      lambda = beta_nadir * C_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (Rt)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }else{
       #Transmission after intervention period
-      lambda = beta_post_lockdown * (as.matrix(C_post_lockdown) %*% ((I_symtomatic/N_age) + ((I_asymtomatic*asymtomatic_relative_infectiousness)/N_age))) #force of infection (Rt)
+      lambda = beta_post_lockdown * C_post_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (Rt)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }
     
