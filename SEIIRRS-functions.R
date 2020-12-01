@@ -30,8 +30,8 @@ make.intervention.matrix <- function(matrixlistin, # list of contact matrices by
   other_mat <- as.matrix(matrixlistin[[matrix_labels[4]]][,-1])
   
   # pre-epidemic matrix
-  overall_mat <-  sum.mat(home_mat, work_mat, school_mat, other_mat, c = c(1, 1, 1, 1))
-  rownames(overall_mat) <- colnames(home_mat)
+  #overall_mat <-  sum.mat(home_mat, work_mat, school_mat, other_mat, c = c(1, 1, 1, 1))
+  #rownames(overall_mat) <- colnames(home_mat)
   int_mat <- sum.mat(home_mat, work_mat, school_mat, other_mat, c = intervention)
   
   # the matrix has participant ages on x-axis (columns), and contact ages on y-axis (rows)
@@ -73,8 +73,10 @@ get_beta <- function(C, R0, mean_infectious,
 }
 
 #Get omega function (rate of immunity decay)
-get_omega <- function(mean, shape, dt){
-  if(mean<=0) omega <- 0
+get_omega <- function(mean, shape, dt, name){
+  if(mean<=0){ 
+    print(paste0("Immunity does not wane in class ", name))
+    omega <- 0}
   else omega <- (1/mean)*shape*dt
   return(omega)
 }
@@ -92,7 +94,9 @@ textNum <- function(text, num){
 #check values are not less than 1 and integer
 checkInteger <- function(x){
   if(x < 1){y <- 1}
-  else if(x%%1!=0){y <- round(x, digits = 0)} 
+  else if(x%%1!=0){
+    print("Shape parameter rounded to integer")
+    y <- round(x, digits = 0)} 
   else y <- x
   return(y)
 }
@@ -115,7 +119,12 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   immune_shape = checkInteger(immune_shape)
   
   #Fix time step during development
-  dt = 1
+  if(dt > 1){
+    print("Time step set to 1")
+    dt <- 1} #dt cannot be greater than 1
+  
+  #If no intervention selected
+  if(!trigger %in% c("days", "threshold")){print("No intervention set")}
   
   #susceptibility vector
   susceptibility <- c(rep(children_relative_susceptibility, 4), rep(1, 11))
@@ -125,7 +134,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   
   #Contact matrix & transmission parameter (beta = probability of infection, given contact)
   C = make.intervention.matrix(BBC_contact_matrix, intervention=c(1,1,1,1))
-  beta = get_beta(C=C, R0=R0, mean_infectious=infectious_mean, 
+  beta = get_beta(C=C, R0=R0, mean_infectious=infectious_mean,
                   susceptibility=susceptibility, prop_asymtomatic=phi,
                   asymtomatic_infectiousness=asymtomatic_relative_infectiousness)
   
@@ -142,19 +151,19 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   
   #Transmission probability post lockdown
   C_post_lockdown <- make.intervention.matrix(BBC_contact_matrix, intervention=intervention_post_lockdown)
-  beta_post_lockdown <- get_beta(C=C_post_lockdown, mean_infectious=infectious_mean, 
+  beta_post_lockdown <- get_beta(C=C_post_lockdown, mean_infectious=infectious_mean,
                            susceptibility=susceptibility, prop_asymtomatic=phi,
                            asymtomatic_infectiousness=asymtomatic_relative_infectiousness, R0=Rt_post_lockdown)
   
   #Intervention time steps
-  t_partial_intervention_step <- t_partial_intervention*(1/dt)
-  t_full_intervention_step <- t_full_intervention*(1/dt)
+  t_partial_intervention_step <- which(time==(t_partial_intervention-(1-dt)))
+  t_full_intervention_step <- which(time==(t_full_intervention-(1-dt)))
 
   #Update gamma (Erlang) distribution parameter values (incoporating gamma shape and dt interval) - see Krylova & Earn 2013 - https://royalsocietypublishing.org/doi/pdf/10.1098/rsif.2013.0098
   sigma <- (1/latent_mean) * latent_shape * dt               #probability of becoming infectious
   gamma <- (1/infectious_mean) * infectious_shape * dt        #probability of recovery
-  omega_1 <- get_omega(mean=immune_mean_1, shape=immune_shape, dt=dt)   #Duration of immunity in R class 1
-  omega_2 <- get_omega(mean=immune_mean_2, shape=immune_shape, dt=dt)   #Duration of immunity in R class 2
+  omega_1 <- get_omega(mean=immune_mean_1, shape=immune_shape, dt=dt, name="R1")   #Duration of immunity in R class 1
+  omega_2 <- get_omega(mean=immune_mean_2, shape=immune_shape, dt=dt, name="R2")   #Duration of immunity in R class 2
   classes <- length(p_age)                #number of age classes
   N_age <- p_age * total_population       #Absolute numbers by age group
   
@@ -204,6 +213,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
     
     #When trigger is "threshold"
     if(trigger=="threshold"){
+      print(paste0("Threshold reached on day: ", t))
     #Check if infection threshold has been reached, set intervention periods
     if(sum(I_symtomatic)>=threshold & intervention_phase[t]==0){
       #Initial lockdown period - triggered by threshold
@@ -214,7 +224,9 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
       intervention_phase[(t+t_partial_intervention_step+t_full_intervention_step+1):length(time)] <- 3
       }
     }else if(trigger=="days"){
-      if((t*dt)==lockdown_day){
+        lockdown_dt <- which(time==(lockdown_day-(1-dt)))
+      if(t==lockdown_dt){
+        print(paste0("Lockdown started. Number of cases: ", round((sum(I_symtomatic)+sum(I_asymtomatic)))))
         #Initial lockdown period - triggered by timing
         intervention_phase[(t+1):(t+t_partial_intervention_step)] <- 1
         #Full intervention period 
@@ -226,20 +238,20 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
     
     #Transmission in absense of intervention
     if(intervention_phase[(t+1)]==0){
-      lambda = beta * C %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (R0)
-      new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
+      lambda = beta * (C %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age)) #force of infection (R0)
+      new_infection = lambda * state[t,,"S"] * susceptibility * dt #new infections per timestep
     }else if(intervention_phase[(t+1)]==1){
       #Transmission during initial lockdown period 
-      lambda = beta_half * C_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (Rt)
-      new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
+      lambda = beta_half * (C_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age)) #force of infection (Rt)
+      new_infection = lambda * state[t,,"S"] * susceptibility * dt #new infections per timestep
     }else if(intervention_phase[(t+1)]==2){
       #Transmission during full lockdown period 
-      lambda = beta_nadir * C_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (Rt)
+      lambda = beta_nadir * (C_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age)) #force of infection (Rt)
       new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
     }else{
       #Transmission after intervention period
-      lambda = beta_post_lockdown * C_post_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age) #force of infection (Rt)
-      new_infection = lambda * state[t,,"S"]* susceptibility * dt #new infections per timestep
+      lambda = beta_post_lockdown * (C_post_lockdown %*% (I_symtomatic + I_asymtomatic*asymtomatic_relative_infectiousness) * (1/N_age)) #force of infection (Rt)
+      new_infection = lambda * state[t,,"S"] * susceptibility * dt #new infections per timestep
     }
     
     #update daily counts of new infections

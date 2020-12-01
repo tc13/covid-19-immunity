@@ -32,7 +32,6 @@ lockdown_day <- 49     #If triggering intervention by number of days, days after
 #####################
 ## Time  variables ##
 #####################
-dt <- 1                   #time period (days)
 days <- 365*2             #number of days 
-time <- seq(1, days, dt)    #time vector
+time <- seq(1, days, 1)    #time vector
 I_init <- c(0,0,0,0,25,25,25,25,25,25,25,25,0,0,0)  #Initial numbers infected: 25 individuals per working age group (20-59); total = 200
