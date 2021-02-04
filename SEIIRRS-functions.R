@@ -72,6 +72,36 @@ get_beta <- function(C, R0, mean_infectious,
   return(beta)
 }
 
+#Get dominant eigenvector from NGM
+get_eigenvector <- function(C, R0, mean_infectious, 
+                     susceptibility, prop_asymtomatic, 
+                     asymtomatic_infectiousness){ 
+  
+  #Calculate next generation matrix K
+  K = matrix(data=0, nrow=nrow(C), ncol=ncol(C))
+  #Kij = infections in group i produced by individuals in group j
+  for(i in 1:nrow(K)){  
+    for(j in 1:nrow(K)){
+      K[i,j] = mean_infectious*(prop_asymtomatic[j]*asymtomatic_infectiousness*C[i,j]+C[i,j]*(1-prop_asymtomatic[j]))*susceptibility[i]
+    }
+  }
+  #Dominant eigenvalue of K
+  dominant = get_eigen(K)
+  
+  #Calculate beta from R0 and K
+  beta = R0/dominant
+  
+  #check new eigenvalue = R0
+  NGM <- K*beta
+  new_eigen <- get_eigen(NGM)
+  
+  #Get dominant eigenvector
+  vectors <- abs(Re(eigen(NGM)$vectors))
+  dom_eigenvec <- vectors[,1] #first column
+  test_that("NGM=R0", expect_equal(new_eigen, R0))
+  return(dom_eigenvec)
+}
+
 #Get omega function (rate of immunity decay)
 get_omega <- function(mean, shape, dt, name){
   if(mean<=0){ 
@@ -102,13 +132,13 @@ checkInteger <- function(x){
 }
 
 #Main model function
-SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, immune_mean_1=90,
+SEIIRRS_intervention <- function(R0=4.0, latent_mean=4.5, infectious_mean=3.1, immune_mean_1=90,
                                 immune_mean_2=180, latent_shape=4, infectious_shape=2, 
-                                immune_shape=2, trigger="days", lockdown_day=75, p_age,
+                                immune_shape=2, trigger="days", lockdown_day, p_age,
                                 asymtomatic_relative_infectiousness=0.5, 
-                                children_relative_susceptibility=0.4,t_full_intervention=60,
-                                dt=1, days=400, BBC_contact_matrix, total_population=66435550, 
-                                p_hospitalised, I_init, Rt_post_lockdown=1.2, Rt_full=0.8, 
+                                children_relative_susceptibility=0.4, t_full_intervention=60,
+                                dt=0.01, days=400, BBC_contact_matrix, total_population=66435550, 
+                                p_hospitalised, I_init, E_init=rep(0,15), Rt_post_lockdown=1.2, Rt_full=0.8, 
                                 Rt_partial=1.2, intervention_post_lockdown=c(1,0.8,0.85,0.75), 
                                 intervention_full=c(0.8,0.3,0.1,0.2), threshold=80000, 
                                 t_partial_intervention=14, phi=c(rep(0.75, 4),rep(0.5,11))){
@@ -130,7 +160,7 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   susceptibility <- c(rep(children_relative_susceptibility, 4), rep(1, 11))
 
   #time vector
-  time <- seq(1, days, dt)
+  time <- seq(0, days, dt)
   
   #Contact matrix & transmission parameter (beta = probability of infection, given contact)
   C = make.intervention.matrix(BBC_contact_matrix, intervention=c(1,1,1,1))
@@ -186,12 +216,16 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   #State variables at t=0
   state[1,,"S"] <- N_age #susceptible absolute numbers
   
-  #Initialise infections by age group with I_init (initial number of infections) vector
-  state[1,,"S"] <- state[1,,"S"]- I_init
+  #Initialise infections by age group with E_init and I_init (initial number of infections and exposed) vector
+  state[1,,"S"] <- state[1,,"S"]- (E_init + I_init)
   for(j in 1:infectious_shape){
     state[1,,Is.lab[j]] <- I_init*(1-phi)/infectious_shape
     state[1,,Ia.lab[j]] <- I_init*phi/infectious_shape
     }
+  
+  for(j in 1:latent_shape){
+    state[1,,E.lab[j]] <- E_init/latent_shape
+  }
   
   #Check initial population size (N) = UK Total Pop
   N = sum(state[1,,])
@@ -224,9 +258,8 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
       intervention_phase[(t+t_partial_intervention_step+t_full_intervention_step+1):length(time)] <- 3
       }
     }else if(trigger=="days"){
-        lockdown_dt <- which(time==(lockdown_day-(1-dt)))
-      if(t==lockdown_dt){
-        print(paste0("Lockdown started. Number of cases: ", round((sum(I_symtomatic)+sum(I_asymtomatic)))))
+      if(time[t]==lockdown_day){
+        print(paste0("Lockdown started on day ",lockdown_day ,". Number of Infectious Individuals: ", round((sum(I_symtomatic)+sum(I_asymtomatic)))))
         #Initial lockdown period - triggered by timing
         intervention_phase[(t+1):(t+t_partial_intervention_step)] <- 1
         #Full intervention period 
@@ -311,22 +344,25 @@ SEIIRRS_intervention <- function(R0=2.8, latent_mean=4.5, infectious_mean=3.07, 
   #Combine E, I, R substates into new array
   state_names_SEIR <- state_names <- c("S", "E", "Is", "Ia", "I", "Rh", "Rnh", "R", "new_infections", "new_hospitalisations")
   
-  out <- array(data=0, dim = c(length(time), classes, length(state_names_SEIR)),
-               dimnames = list(as.character(time), colnames(C), state_names_SEIR))
-  out[,,"S"] <- state[,,"S"]
-  for(i in 1:latent_shape){out[,,"E"] <- out[,,"E"] + state[,,E.lab[i]]}
-  for(i in 1:infectious_shape){out[,,"Is"] <- out[,,"Is"] + state[,,Is.lab[i]]}  
-  for(i in 1:infectious_shape){out[,,"Ia"] <- out[,,"Ia"] + state[,,Ia.lab[i]]}  
-  for(i in 1:immune_shape){out[,,"Rh"] <- out[,,"Rh"] + state[,,Rh.lab[i]]}  
-  for(i in 1:immune_shape){out[,,"Rnh"] <- out[,,"Rnh"] + state[,,Rnh.lab[i]]} 
+  #Daily time points
+  daily_indx <- time%%1==0
+  
+  out <- array(data=0, dim = c(length(time[daily_indx]), classes, length(state_names_SEIR)),
+               dimnames = list(as.character(time[daily_indx]), colnames(C), state_names_SEIR))
+  out[,,"S"] <- state[daily_indx,,"S"]
+  for(i in 1:latent_shape){out[,,"E"] <- out[,,"E"] + state[daily_indx,,E.lab[i]]}
+  for(i in 1:infectious_shape){out[,,"Is"] <- out[,,"Is"] + state[daily_indx,,Is.lab[i]]}  
+  for(i in 1:infectious_shape){out[,,"Ia"] <- out[,,"Ia"] + state[daily_indx,,Ia.lab[i]]}  
+  for(i in 1:immune_shape){out[,,"Rh"] <- out[,,"Rh"] + state[daily_indx,,Rh.lab[i]]}  
+  for(i in 1:immune_shape){out[,,"Rnh"] <- out[,,"Rnh"] + state[daily_indx,,Rnh.lab[i]]} 
   out[,,"I"] <- out[,,"Is"] + out[,,"Ia"]
   out[,,"R"] <- out[,,"Rh"] + out[,,"Rnh"]
-  out[,,"new_infections"] <- daily_counts[,,"new_infections"]
-  out[,,"new_hospitalisations"] <- daily_counts[,,"new_hospitalisations"]
   
+  out[,,"new_infections"] <- apply(daily_counts[,,"new_infections"],2,FUN=function(x){unname(tapply(x, (seq_along(x)-1) %/% (1/dt), sum))})
+  out[,,"new_hospitalisations"] <- apply(daily_counts[,,"new_hospitalisations"],2,FUN=function(x){unname(tapply(x, (seq_along(x)-1) %/% (1/dt), sum))})
   
   #Check population size (N) =  UK total pop
-  N = sum(out[(t+1),,c("S", "E", "Is", "Ia", "Rh", "Rnh")])
+  N = sum(out[(max(time)),,c("S", "E", "Is", "Ia", "Rh", "Rnh")])
   test_that("Final pop size (N) = UK Total", expect_equal(N, total_population))
   
   #Return out array

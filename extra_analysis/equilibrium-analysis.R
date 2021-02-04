@@ -29,7 +29,7 @@ p_age <- uk.pop.2018.count$total/total_pop  #Proportion of population in each ag
 #####################
 ## Time  variables ##
 #####################
-dt <- 1                   #time period (days)
+dt <- 0.01                   #time period (days)
 days <- 365*5             #number of days 
 time <- seq(1, days, dt)    #time vector
 
@@ -39,7 +39,7 @@ time <- seq(1, days, dt)    #time vector
 
 #Rt post lockdown = 0.9
 #Scenario 1: hospitalised & non-hospitalised patients have permanent immunity
-S1.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S1.R09.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -49,7 +49,7 @@ S1.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 2: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 365 days
-S2.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S2.R09.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -59,7 +59,7 @@ S2.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 3: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 180 days
-S3.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S3.R09.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -69,7 +69,7 @@ S3.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 4: hospitalised patients have immunity for mean 365 days, non-hospitalised patients have immunity for mean 90 days
-S4.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S4.R09.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -80,7 +80,7 @@ S4.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 
 #Rt post lockdown = 1.0
 #Scenario 1: hospitalised & non-hospitalised patients have permanent immunity
-S1.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S1.R10.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -90,7 +90,7 @@ S1.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 2: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 365 days
-S2.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S2.R10.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -100,7 +100,7 @@ S2.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 3: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 180 days
-S3.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S3.R10.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -110,7 +110,7 @@ S3.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 4: hospitalised patients have immunity for mean 365 days, non-hospitalised patients have immunity for mean 90 days
-S4.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S4.R10.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -121,7 +121,7 @@ S4.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 
 #Rt post lockdown = 1.1
 #Scenario 1: hospitalised & non-hospitalised patients have permanent immunity
-S1.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S1.R11.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -131,7 +131,7 @@ S1.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 2: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 365 days
-S2.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S2.R11.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -141,7 +141,7 @@ S2.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 3: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 180 days
-S3.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S3.R11.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -151,7 +151,7 @@ S3.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 4: hospitalised patients have immunity for mean 365 days, non-hospitalised patients have immunity for mean 90 days
-S4.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S4.R11.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -162,7 +162,7 @@ S4.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 
 #Rt post lockdown = 1.2
 #Scenario 1: hospitalised & non-hospitalised patients have permanent immunity
-S1.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S1.R12.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -172,7 +172,7 @@ S1.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 2: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 365 days
-S2.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S2.R12.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -182,7 +182,7 @@ S2.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 3: hospitalised patients have permanent immunity, non-hospitalised patients have immunity for mean 180 days
-S3.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S3.R12.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -192,7 +192,7 @@ S3.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
                                trigger="days", lockdown_day=lockdown_day, Rt_partial=Rt_partial)
 
 #Scenario 4: hospitalised patients have immunity for mean 365 days, non-hospitalised patients have immunity for mean 90 days
-S4.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
+S4.R12.eq <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
                                dt=dt, days=days, #times
@@ -210,9 +210,12 @@ dates <- seq(ymd(start_date),ymd(start_date+(days-1)), by = as.difftime(hours(ho
 #Figures for Table 2 -function to extract relevant values
 equilibrium <- function(model, dates, end_intervention=tpi+tfi+lockdown_day, population=total_pop){
   new_infections = apply(model[,,"new_infections"], 1, sum)
+  new_infections = new_infections[-length(new_infections)]
+  #dates= dates[-length(dates)]
   plot(new_infections~dates)
   max_days = length(new_infections)
   immune = apply(model[,,"R"], 1, sum)
+  immune = immune[-length(immune)]
   #Check if new cases fall below zero
   if(!all(new_infections[end_intervention:max_days]>1)){
     day_zero_indx = which(new_infections<1)
@@ -225,8 +228,8 @@ equilibrium <- function(model, dates, end_intervention=tpi+tfi+lockdown_day, pop
     #Else check if steady state reached
     delta = abs(diff(new_infections))
     delta2 = abs(diff(delta))
-    eq1_indx = which(delta<0.2)
-    eq2_indx = which(delta2<0.01)
+    eq1_indx = which(delta<0.1)
+    eq2_indx = which(delta2<0.004)
     eq_both_indx = intersect(eq1_indx, eq2_indx)
     if(length(eq_both_indx)==0){day_eq=max_days
     
@@ -250,26 +253,25 @@ equilibrium <- function(model, dates, end_intervention=tpi+tfi+lockdown_day, pop
 ##########################################
 
 #Rt=0.9
-equilibrium(model=S1.R09, dates=dates)
-equilibrium(model=S2.R09, dates=dates)
-equilibrium(model=S3.R09, dates=dates)
-equilibrium(model=S4.R09, dates=dates)
+equilibrium(model=S1.R09.eq, dates=dates)
+equilibrium(model=S2.R09.eq, dates=dates)
+equilibrium(model=S3.R09.eq, dates=dates)
+equilibrium(model=S4.R09.eq, dates=dates)
 
 #Rt=1.0
-equilibrium(model=S1.R10, dates=dates)
-equilibrium(model=S2.R10, dates=dates)
-equilibrium(model=S3.R10, dates=dates)
-equilibrium(model=S4.R10, dates=dates)
+equilibrium(model=S1.R10.eq, dates=dates)
+equilibrium(model=S2.R10.eq, dates=dates)
+equilibrium(model=S3.R10.eq, dates=dates)
+equilibrium(model=S4.R10.eq, dates=dates)
 
 #Rt=1.1
-equilibrium(model=S1.R11, dates=dates)
-equilibrium(model=S2.R11, dates=dates)
-equilibrium(model=S3.R11, dates=dates)
-equilibrium(model=S4.R11, dates=dates)
+equilibrium(model=S1.R11.eq, dates=dates)
+equilibrium(model=S2.R11.eq, dates=dates)
+equilibrium(model=S3.R11.eq, dates=dates)
+equilibrium(model=S4.R11.eq, dates=dates)
 
 #Rt=1.2
-equilibrium(model=S1.R12, dates=dates)
-equilibrium(model=S2.R12, dates=dates)
-equilibrium(model=S3.R12, dates=dates)
-equilibrium(model=S4.R12, dates=dates)
-
+equilibrium(model=S1.R12.eq, dates=dates)
+equilibrium(model=S2.R12.eq, dates=dates)
+equilibrium(model=S3.R12.eq, dates=dates)
+equilibrium(model=S4.R12.eq, dates=dates)

@@ -11,7 +11,7 @@
 S1.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                           p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                           immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
-                          days=days, #times
+                          days=days, dt=dt,#times
                           BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                           Rt_post_lockdown=0.9, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                           Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -21,7 +21,7 @@ S1.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S2.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                            p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                            immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
-                           days=days, #times
+                           days=days, dt=dt,#times
                            BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                            Rt_post_lockdown=0.9, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                            Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -31,7 +31,7 @@ S2.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S3.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                            p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                            immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
-                           days=days, #times
+                           days=days, dt=dt,#times
                            BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                            Rt_post_lockdown=0.9, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                            Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -41,7 +41,7 @@ S3.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S4.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                            p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                            immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
-                           days=days, #times
+                           days=days, dt=dt,#times
                            BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                            Rt_post_lockdown=0.9, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                            Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -52,7 +52,7 @@ S4.R09 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S1.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt, #times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.0, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -62,7 +62,7 @@ S1.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S2.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.0, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -72,7 +72,7 @@ S2.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S3.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.0, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -82,7 +82,7 @@ S3.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S4.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.0, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -93,7 +93,7 @@ S4.R10 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S1.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.1, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -103,7 +103,7 @@ S1.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S2.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.1, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -113,7 +113,7 @@ S2.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S3.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.1, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -123,7 +123,7 @@ S3.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S4.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.1, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -134,7 +134,7 @@ S4.R11 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S1.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=0, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.2, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -144,7 +144,7 @@ S1.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S2.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=365, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.2, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -154,7 +154,7 @@ S2.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S3.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=0, immune_mean_2=180, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.2, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params
@@ -164,7 +164,7 @@ S3.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=g
 S4.R12 <- SEIIRRS_intervention(R0=R0, latent_mean=sigma_recip, infectious_mean=gamma_recip, latent_shape=m, infectious_shape=n, #Natural history parameters
                                p_hospitalised=p_hosp, asymtomatic_relative_infectiousness=ari, children_relative_susceptibility=crs, phi=phi, #Natural history parameters
                                immune_mean_1=365, immune_mean_2=90, immune_shape=2, #scenario specific immune duration
-                               days=days, #times
+                               days=days, dt=dt,#times
                                BBC_contact_matrix=BBC_contact_matrix, total_population=total_pop, p_age=p_age, I_init=I_init, #population data
                                Rt_post_lockdown=1.2, intervention_post_lockdown=intervention_post_lockdown, t_partial_intervention=tpi, #Partial intervention params
                                Rt_full=Rt_lockdown, intervention_full=intervention_full, t_full_intervention = tfi, #Full intervention params

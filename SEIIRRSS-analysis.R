@@ -28,7 +28,7 @@ p_age <- uk.pop.2018.count$total/total_pop  #Proportion of population in each ag
 ####################################################
 source("SEIIRRS-functions.R")
 source("SEIIRRS-parameters.R")
-source("SEIIRRS-scenarios.R")
+source("SEIIRRS-scenarios.R") #Takes around 50 mins to run
 
 #Function to make axis numbers in scientific notation
 scientific <- function(x){
@@ -36,34 +36,35 @@ scientific <- function(x){
 }
 
 #Date variables
+time <- seq(0, days, 1)
 date_UK_lockdown <- "2020-03-23"
 start_date <- as.Date(date_UK_lockdown)-lockdown_day
-hour_period <- 24*dt
-dates <- seq(ymd(start_date),ymd(start_date+(days-1)), by = as.difftime(hours(hour_period)))
+hour_period <- 24
+dates <- seq(ymd(start_date),ymd(start_date+days), by = as.difftime(hours(hour_period)))
 
 #New infection on lockdown day
 new_infections <- apply(S1.R10[,,"new_infections"],1,sum)
 new_infections_adults <- apply(S1.R10[,c(5:15),"new_infections"],1,sum)
-new_infections[lockdown_day] #91,000
+new_infections[lockdown_day] #107,669 (108,000)
 
 #Total infectious individuals
 I <- apply(S1.R10[,,"I"],1,sum)
-I[lockdown_day] #117,000
+I[lockdown_day] #75,000
 
 #cumulative infections
-start_cum_date <- "2020-02-16"
-which(dates==start_cum_date)
-sum(new_infections[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #676,000
-sum(new_infections_adults[which(dates==start_cum_date):which(dates==date_UK_lockdown)]) #633,000
+#start_cum_date <- "2020-02-16"
+#which(dates==start_cum_date)
+sum(new_infections[1:which(dates==date_UK_lockdown)]) #559,000
+sum(new_infections_adults[1:which(dates==date_UK_lockdown)]) #524,000
 
 #Recovered (ages 19+)
 recovered_19plus <- apply(S1.R10[,c(5:15),"R"],1,sum)
 end_lockdown <- as.Date(date_UK_lockdown)+(tpi+tfi) 
 which(dates==end_lockdown)
-recovered_19plus[which(dates==end_lockdown)]/sum(uk.pop.2018.count$total[5:15]) #6.3% of adults with immunity
+recovered_19plus[which(dates==end_lockdown)]/sum(uk.pop.2018.count$total[5:15]) #6.8% of adults with immunity
 sum(new_infections[1:which(dates==end_lockdown)])
 recovered_all <- apply(S1.R10[,,"R"],1,sum)
-recovered_all[which(dates==end_lockdown)]/total_pop #5.2% of the total population with immunity
+recovered_all[which(dates==end_lockdown)]/total_pop #5.7% of the total population with immunity
 
 ####################
 ## Secondary Peak ##
@@ -71,23 +72,23 @@ recovered_all[which(dates==end_lockdown)]/total_pop #5.2% of the total populatio
 
 #If Rt=1.2
 #In immunity scenario 4
-max(apply(S4.R12[,,"I"],1,sum)) #393,000
-max(apply(S4.R12[,,"new_infections"],1,sum)) #128,000
+max(apply(S4.R12[,,"I"],1,sum)) #387,000
+max(apply(S4.R12[,,"new_infections"],1,sum)) #125,000
 #In immunity scenario 1, restrict time to after lockdown- days 130-730
-max(apply(S1.R12[,,"I"],1,sum)[130:730]) #133,000
-max(apply(S1.R12[,,"new_infections"],1,sum)[130:730]) #43,000
+max(apply(S1.R12[,,"I"],1,sum)[130:730]) #126,000
+max(apply(S1.R12[,,"new_infections"],1,sum)[130:730]) #41,000
 
 #If Rt=1.1, examine figures in April 2021
 april_2021_indx <- which(dates>="2021-04-01"&dates<="2021-04-30")
 #In immunity scenario 4
-max(apply(S4.R11[,,"I"],1,sum)[april_2021_indx]) #155,000
+max(apply(S4.R11[,,"I"],1,sum)[april_2021_indx]) #154,000
 max(apply(S4.R11[,,"new_infections"],1,sum)[april_2021_indx]) #50,000
 #In immunity scenario 1
-max(apply(S1.R11[,,"I"],1,sum)[april_2021_indx]) #17,000
-max(apply(S1.R11[,,"new_infections"],1,sum)[april_2021_indx]) #6,000
+max(apply(S1.R11[,,"I"],1,sum)[april_2021_indx]) #15,000
+max(apply(S1.R11[,,"new_infections"],1,sum)[april_2021_indx]) #5,000
 
-154648.1/17486.93 #nine-fold difference in number infected
-50376.33/5578.428 #nine-fold difference in new cases
+153742.5/14995.98 #nine-fold difference in number infected
+49602.97/4661.453 #nine-fold difference in new cases
 
 ####################################
 ## Proportion of Age group immune ##
@@ -104,7 +105,7 @@ round(S4.R12[oct1,,"R"]/uk.pop.2018.count$total*100, digits = 1)[5:8] #percentag
 #axis values
 y.vals <- c(0, 5E4, 15E4, 25E4, 35E4, 45E4)
 y.labs <- scientific(y.vals)
-date_vec <- seq.Date(from=as.Date("2020-02-01"), to=as.Date("2022-02-01"), by="4 months")
+date_vec <- seq.Date(from=as.Date("2020-03-01"), to=as.Date("2022-03-01"), by="4 months")
 
 #Infection vectors
 I_S1 <- apply(S1.R09[,,"I"],1,sum)
@@ -124,7 +125,7 @@ lines(I_S4~dates, col="red3", lwd=4)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 axis(2, y.vals, labels=y.labs, cex.axis=2.0) #y-axis scientific notation
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-legend(x=c(as.Date("2020-11-15"), as.Date("2022-02-01")), y=c(242308, 432692), title="Immunity Scenario",
+legend(x=c(as.Date("2020-12-15"), as.Date("2022-03-01")), y=c(242308, 432692), title="Immunity Scenario",
        legend=c("S1: Permanent", "S2: Waning (12 months)", "S3: Waning (6 months)", "S4: Short-lived"), 
        lty=1, lwd=c(3.7,3.5,3.5,3.7), cex=2.2,
        col=c("grey40","blue4","green4", "red3"))
@@ -211,7 +212,7 @@ lines(R_S3~dates, col="green4", lwd=4)
 lines(R_S4~dates, col="red3", lwd=4)
 axis(1, date_vec, format(date_vec, "%b-%y"), cex.axis=2.0) #x-axis dates
 abline(v=c(as.Date(date_UK_lockdown), end_lockdown), lty=2, lwd=2.5)
-legend(x=c(as.Date("2020-11-15"), as.Date("2022-02-01")), y=c(0.113, 0.202), title="Immunity Scenario",
+legend(x=c(as.Date("2020-12-15"), as.Date("2022-03-01")), y=c(0.113, 0.202), title="Immunity Scenario",
        legend=c("S1: Permanent", "S2: Waning (12 months)", "S3: Waning (6 months)", "S4: Short-lived"), 
        lty=1, lwd=c(3.7,3.5,3.5,3.7), cex=2.2,
        col=c("grey40","blue4","green4", "red3"))

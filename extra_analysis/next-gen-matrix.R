@@ -26,7 +26,7 @@ p_age <- uk.pop.2018.count$total/total_pop  #Proportion of population in each ag
 ####################################################
 source("SEIIRRS-functions.R")
 source("SEIIRRS-parameters.R")
-source("SEIIRRS-scenarios.R")
+#source("SEIIRRS-scenarios.R")
 
 #ggplot theme set
 theme_set(theme_bw(base_size = 28))
@@ -71,6 +71,7 @@ curve(dgamma(x, shape=o, rate=o/immune_mean_3), from=0,to=365*2)
 
 #simulation
 N <- 100000
+dt <- 0.1
 set.seed(1234)
 latent_periods <- rgamma(n=N, shape=m, rate=m/sigma_recip)
 set.seed(1234)
@@ -127,38 +128,46 @@ C2 <- make.intervention.matrix(BBC_contact_matrix, intervention=c(home=1,work=0.
 
 #Get beta
 beta_baseline <- get_beta(C=C0, R0=R0, mean_infectious=gamma_recip, susceptibility=susceptibility, 
-                 prop_asymtomatic=phi, asymtomatic_infectiousness=ari, p_age=p_age)
+                 prop_asymtomatic=phi, asymtomatic_infectiousness=ari)
 NGM_baseline <- NGM(C=C0, beta=beta_baseline, R0=R0, mean_infectious = gamma_recip, susceptibility = susceptibility,
-           prop_asymtomatic=phi, asymtomatic_infectiousness = ari, p_age=p_age)
+           prop_asymtomatic=phi, asymtomatic_infectiousness = ari)
 
 beta_intervention <- get_beta(C=C1, R0=0.8, mean_infectious=gamma_recip, susceptibility=susceptibility, 
-                              prop_asymtomatic=phi, asymtomatic_infectiousness=ari, p_age=p_age)
+                              prop_asymtomatic=phi, asymtomatic_infectiousness=ari)
 NGM_intervention <- NGM(C=C1, beta=beta_intervention, R0=0.8, mean_infectious = gamma_recip, susceptibility = susceptibility,
-                        prop_asymtomatic=phi, asymtomatic_infectiousness = ari, p_age=p_age)
+                        prop_asymtomatic=phi, asymtomatic_infectiousness = ari)
 
 beta_post_09 <- get_beta(C=C2, R0=0.9, mean_infectious=gamma_recip, susceptibility=susceptibility, 
-                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari, p_age=p_age)
+                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari)
 
 beta_post_10 <- get_beta(C=C2, R0=1.0, mean_infectious=gamma_recip, susceptibility=susceptibility, 
-                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari, p_age=p_age)
+                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari)
 
 beta_post_11 <- get_beta(C=C2, R0=1.1, mean_infectious=gamma_recip, susceptibility=susceptibility, 
-                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari, p_age=p_age)
+                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari)
 
 beta_post_12 <- get_beta(C=C2, R0=1.2, mean_infectious=gamma_recip, susceptibility=susceptibility, 
-                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari, p_age=p_age)
+                         prop_asymtomatic=phi, asymtomatic_infectiousness=ari)
 
 NGM_post_09 <- NGM(C=C2, beta=beta_post_09, R0=0.9, mean_infectious = gamma_recip, susceptibility = susceptibility,
-                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari, p_age=p_age)
+                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari)
 
 NGM_post_10 <- NGM(C=C2, beta=beta_post_10, R0=1.0, mean_infectious = gamma_recip, susceptibility = susceptibility,
-                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari, p_age=p_age)
+                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari)
 
 NGM_post_11 <- NGM(C=C2, beta=beta_post_11, R0=1.1, mean_infectious = gamma_recip, susceptibility = susceptibility,
-                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari, p_age=p_age)
+                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari)
 
 NGM_post_12 <- NGM(C=C2, beta=beta_post_12, R0=1.2, mean_infectious = gamma_recip, susceptibility = susceptibility,
-                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari, p_age=p_age)
+                   prop_asymtomatic=phi, asymtomatic_infectiousness = ari)
+
+################################################
+## Number of secondary cases from age group j ##
+################################################
+
+secondary_cases <- data.frame(age_group_j = uk.pop.2018.count$age_group,
+                              cases=apply(NGM_baseline,1,sum ))#sum rows
+
 
 ##Figure 2A - Population of UK by age group
 x.lb <- c(0, 2000000, 4000000, 6000000, 8000000, 10000000)
@@ -269,7 +278,7 @@ ggplot(data = contacts, aes(x=Var1, y=Var2, fill=value)) +
 
 #Melt NGMS
 NGM_baseline_m <- melt(NGM_baseline)
-NGM_baseline_m$time <- "Baseline~(R[0]==2.8)"
+NGM_baseline_m$time <- "Baseline~(R[0]==4.0)"
 
 NGM_intervention_m <- melt(NGM_intervention)
 NGM_intervention_m$time <- "Lockdown~(R[t]==0.8)"
@@ -293,9 +302,11 @@ NGMs <- rbind(NGM_baseline_m, NGM_intervention_m, NGM_post_09_m,
 #png("/Users/tomc/Google Drive/coronavirus/Figures/Fig-NGM.png", width=14, height=11.5, units="in", res=450)
 ggplot(data = NGMs, aes(x=Var1, y=Var2, fill=value))+ 
   geom_raster(hjust=1, vjust=1)+
-  scale_fill_distiller(name="Secondary cases from index case", breaks=c(0, 0.25, 0.5, 0.75, 1), 
-                       labels=c("0", "0.25", "0.5", "0.75", "1"),
-  limit=c(0,1),type="seq", palette=1, direction = 1, values=c(0.1,1), na.value ="#ffffff",
+  scale_fill_distiller(name="Secondary cases from index case", 
+                       breaks=c(0,  0.5, 1, 1.4), 
+                       labels=c("0", "0.5", "1", "1.4"),
+  limit=c(0,1.4),
+  type="seq", palette=1, direction = 1, values=c(0.09,1), na.value ="#ffffff",
     guide=guide_colourbar(title.position="top", barwidth = 12, frame.colour="black", 
                           label.theme=element_text(size=16, family="Times"),
                           ticks.colour = "black", ticks.linewidth = 2, label.vjust=2.5, title.vjust = 1))+ 
