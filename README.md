@@ -3,9 +3,9 @@ Code to accompany an age-structured difference equation model on the dynamics of
 
 After cloning the repository, run `SEIIRRS-analysis.R` in _RStudio_. This script calls the functions in `SEIIRRS-functions.R`, which runs the age-structured discrete time model. Ensure that required _R_ packages `lubridate`, `testthat `& `rstudioapi` are installed prior to running the code. 
 
-The code is the property of Thomas Crellen (thomas.crellen@bdi.ox.ac.uk). The age structured contact matrices for the UK population (in the `/data` folder) are the property of Dr Petra Klepac (petra.klepac@lshtm.ac.uk).
+Questions about the code can be directed to the corresponding author, Thomas Crellen (thomas.crellen@bdi.ox.ac.uk). The age structured contact matrices for the UK population (in the `/data` folder) are the property of Dr Petra Klepac (petra.klepac@lshtm.ac.uk).
 
-# Citing this resource
+# Citing this code resource
 As these analysis notes are an integral part of the paper and do not have their own DOI, we kindly request that you cite the full paper as follows:
 
 > @ARTICLE{Crellen2020,
